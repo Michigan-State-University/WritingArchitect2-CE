@@ -1,0 +1,302 @@
+:root {
+    --sc-color-cap: #0d6efd;
+    --sc-color-spell: #6610f2;
+    --sc-color-punc: #dc3545;
+    --sc-color-gram: #fd7e14;
+    --sc-color-sem: #ffc107;
+    --sc-color-syn: #42c1b6;
+}
+
+/* ERROR COLOR FORMATTING */
+[data-score^="cap_"],
+[data-score^="cap_"]:hover {
+    color: var(--sc-color-cap);
+}
+[data-score^="spell_"],
+[data-score^="spell_"]:hover {
+    color: var(--sc-color-spell);
+}
+[data-score^="inacc_"],
+[data-score^="inacc_"]:hover {
+    color: var(--sc-color-punc);
+}
+[data-score^="gram_"],
+[data-score^="gram_"]:hover {
+    color: var(--sc-color-gram);
+}
+[data-score^="overlap_"],
+[data-score^="overlap_"]:hover {
+    color: var(--sc-color-sem);
+}
+[data-score^="nmae_"],
+[data-score^="nmae_"]:hover {
+    color: var(--sc-color-syn);
+}
+
+button [data-score]:hover {
+    background-color: lightgray;
+    border-color: grey;
+}
+body {
+    padding-bottom: 40pt;
+}
+
+.nav-header a {
+    background-color: whitesmoke;
+    border-style: solid;
+    border-width: 2px 2px 0px 2px;
+    border-color: lightgray;
+    border-radius: 4px 4px 0px 0px;
+    padding: 4px 12px;
+    color: rgb(51, 51, 51);
+    width: 154px;
+    display: inline-block;
+    text-align: center;
+}
+
+.scoring-docs {
+    float: right;
+}
+
+.tab-current {
+    background-color: white !important;
+    font-weight: bold;
+}
+
+.essay-raw {
+    height: 30vh;
+    width: 100%;
+    padding: 4px 8px;
+    border-color: lightgray;
+}
+
+.essay-scoring {
+    height: 30vh;
+    width: auto;
+    overflow-y: scroll;
+    border-style: solid;
+    border-width: 1px;
+    border-color: lightgray;
+    padding: 0 4px;
+}
+
+.essay-scoring > button {
+    border-style: solid;
+    border-color: white;
+    font-size: 16px;
+    padding: 0px 4px;
+    border-radius: 4px;
+}
+
+.essay-scoring > button:hover {
+    background-color: gainsboro;
+}
+
+.essay-scoring > button:active {
+    background-color: white;
+}
+
+.essay-scoring > .btn-active {
+    border-width: 2px;
+    border-color: darkorange;
+    border-style: solid;
+}
+
+.btn-word {
+    color: rgb(40, 40, 40);
+}
+.btn-space {
+    font-weight: bold;
+    min-width: 27px;
+}
+.btn-space[data-score=""] {
+    color: forestgreen;
+}
+
+.btn-undo button {
+    height: fit-content;
+    margin-left: 8px;
+}
+
+.save-btns {
+    text-align: right;
+}
+
+#btn-save,
+#btn-sign {
+    align-self: flex-end;
+    color: rgb(40, 40, 40);
+}
+
+/* FIELDSETS */
+fieldset {
+    padding: 4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    min-width: 0;
+}
+
+legend {
+    background-color: rgb(55, 60, 58);
+    color: white;
+    font-size: 14pt;
+}
+
+.vert-legend {
+    writing-mode: vertical-lr;
+    transform: rotate(180deg);
+    width: auto;
+    padding-top: 24pt;
+    padding-bottom: 24pt;
+    text-align: center;
+}
+
+#fs-sentence > legend {
+    height: 260px;
+}
+
+.hor-legend {
+    padding-left: 12pt;
+}
+
+/* FIELDSET LABELS, INPUTS */
+fieldset > span {
+    font-family: monospace;
+    color: darkslategray;
+    display: inline-flex;
+    text-align: right;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #dedede;
+    padding-right: 8px;
+    justify-content: right;
+}
+
+#fs-counts,
+#fs-score {
+    width: 300px;
+    padding: 4px;
+}
+
+#fs-scored-by {
+    padding-left: 4px;
+    margin: 0px;
+}
+
+#fs-counts label,
+#fs-typing label {
+    width: 156px;
+}
+
+#fs-counts label,
+#fs-score label {
+    padding-left: 12px;
+}
+
+#fs-score label {
+    width: 170px;
+}
+
+#fs-counts span,
+#fs-score span,
+#fs-typing span,
+#fs-typing input,
+#fs-typing em {
+    width: 70px;
+}
+
+#fs-scored-by code {
+    padding-left: 8px;
+    padding-right: 20px;
+}
+
+#fs-word,
+#fs-sentence,
+.sc-scoring,
+#fs-scored-by,
+#notes {
+    border: solid;
+    border-width: 1px;
+    border-color: #dedede;
+}
+
+.sc-scoring {
+    padding: 0px 12px 0px 12px;
+}
+
+#fs-word {
+    height: 134px;
+    transform: translate(0, 5px);
+}
+
+#fs-sentence {
+    height: 273px;
+}
+
+fieldset > button {
+    width: 130px;
+    margin-bottom: 4px;
+    margin-right: 12pt;
+    background-image: radial-gradient(circle, whitesmoke, #e7e7e7);
+    border-color: white;
+    border-width: 4px;
+}
+
+fieldset > button:hover {
+    border-color: slategrey;
+    background-image: radial-gradient(circle, white, #e7e7e7);
+}
+
+.sc-category {
+    width: 140px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.sc-symbol {
+    font-weight: bold;
+    margin-left: 12pt;
+    width: fit-content(20em);
+}
+
+.sc-type-info {
+    width: 200px;
+    margin-right: 8pt;
+}
+
+.student {
+    color: darkslategray;
+}
+
+.typing-scoring label,
+#fs-scored-by code {
+    margin-left: 8px;
+}
+
+/* ************************ */
+/* Typing Test */
+
+#copy-response,
+#copy-passage {
+    height: 30vh;
+    width: 100%;
+    overflow: auto;
+    padding: 12px 24px;
+}
+
+#copy-passage {
+    color: grey;
+}
+
+#words-missing,
+#words-extra {
+    height: 40px;
+    width: 100%;
+}
+
+.words-score h4 {
+    color: white;
+    background-color: rgb(55, 60, 58);
+    font-size: 14pt;
+    padding: 4pt 14pt 4pt 14pt;
+}

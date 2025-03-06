@@ -1,0 +1,82 @@
+
+  
+  #banner img {
+    width: 500px;
+    padding: 120px 60px;
+  }
+  
+  #btn-login {
+    background-color: #2E7565;
+    width: 100px;
+    color: whitesmoke;
+    display: table;
+     margin: 0 auto 80px
+  }
+  
+  #about {
+    color: whitesmoke;
+    background: darkslategrey
+  
+  }
+  #about div {
+    padding: 120px 28px;
+  }
+  
+  #footer{
+   position:fixed;
+   bottom:0;
+   left:0;
+  }
+  
+  
+  #contact, footer{
+    background: #2E7565;
+    color: whitesmoke;
+    padding: 40px
+  }
+  #social a{
+    color: whitesmoke;
+      font-size: 2em;
+    padding: 4px;
+    text-decoration: none
+  }
+  
+  #gallery img {
+    width: 100%;
+    height: auto;
+    background-color: whitesmoke;
+    
+  }
+  
+  
+  footer {
+    color: whitesmoke;
+    text-align: center;
+    padding-top: 80px;
+  }
+  
+  nav a {
+    color: #2E7565;
+    padding: 20px;
+    
+  }
+  
+  #publications a,
+  footer a,
+  #contact a {
+    color: whitesmoke
+  }
+  
+  nav{
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: white
+  } 
+  
+  
+  #blurb{
+    padding: 40px
+  }
+  
+  

@@ -1,0 +1,138 @@
+.banner{
+    margin: 0;
+    padding: 0;  
+}
+
+nav{
+    margin: 0;
+    padding: 0;
+    background-color:#113d34; /* MSU Green */
+    width: 100vw;
+    height: 10vh;
+}
+
+nav ul{
+    margin: 0;
+    padding: 0 6vh;  /*Space between right edge of the screen*/
+    text-align: center;
+    display: flex;  /*Adds space between list/nav buttons*/
+    gap: 2vh;
+    justify-content: flex-end;  /*Aligns nav buttons right*/
+    list-style-type: none; /* Removes bullets */
+}
+
+/* Manages hiding the menu icon while screen in above cerain width */
+.menubar{
+    display: none;
+}
+
+
+nav li{
+    margin: 0;
+    padding: 0;
+
+}
+
+nav li.left{
+    margin: 0;
+    padding: 0;
+    margin-right: auto;  /*Moves the words to the left/eliminates gap between item and the left side of the screen*/
+    padding-left: 0px;
+
+}
+
+
+nav a{
+    margin: 0;
+    padding: 0;
+    text-decoration: none;  /*Gets rid of link underline/purpleness*/
+    color: white;
+    /* font-size: 3vh; */
+    font-size: 22px;
+    line-height: 10vh;
+}
+
+
+nav a.link:hover{
+    opacity:0.5;
+}
+
+
+nav img{
+    margin: 0;
+    padding: 0;
+    width: 8vw;
+    height: 8vh;
+    /* width: 10%;
+    height: 10%; */
+    object-fit: contain;  /*Keeps image from scrunching up into its space*/
+    vertical-align: middle;
+}
+
+
+/* List items within dropdown menu */
+nav span ul{
+    display: block;
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; 
+    margin: 0; 
+    text-align: left; /*Shove links to the left of the screen*/
+
+
+}
+
+nav span ul li {
+    display: block; 
+
+    /* Adjust space between each list item */
+    margin-bottom: 10px; 
+    margin-top: 10px;
+    margin-left: 10px;
+
+}
+
+nav span ul li a{
+    display: block; 
+    line-height: 1;
+    font-size: 15px;
+
+}
+
+
+
+nav input{
+    display: none;
+}
+
+/* Hide the dropdown menu by default */
+.dropdown-menu {
+    display: none; /* Initially hide the dropdown menu */
+    position: absolute;
+    background-color: rgb(50, 50, 60);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100vw; 
+ 
+    /*Make dropdown start at left of the screen instead of under check box*/
+    top: 22vh;;
+    left:0;
+}
+
+
+input:checked + .dropdown-menu {
+    display:block;
+  }
+
+
+
+/* Manages nav display with changing screen widths*/
+@media screen and (max-width:650px){
+    /*Hides fullscreen nav and displays menu icon */
+    ul.fullscreen{
+        display: none;    
+    }
+
+    .menubar{
+        display:flex;
+        
+    }
+}

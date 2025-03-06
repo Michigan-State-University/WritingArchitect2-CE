@@ -1,0 +1,23 @@
+footer{
+    display:flex;
+    justify-content: center; /*Center the bio content*/
+    text-justify: inter-word;
+    padding-top: 1%;
+    margin-top: 5%;
+    height: 5vh;
+    width:100%;
+    min-height: 30px;
+    background-color: #113d34;
+    text-align: justify;
+    text-justify: inter-word;
+}
+
+footer p{
+    color: grey;
+    margin:0;
+    padding:0;
+    text-align: justify;
+    text-justify: inter-word;
+    
+}
+

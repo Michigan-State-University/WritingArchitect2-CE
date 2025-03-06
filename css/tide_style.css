@@ -1,0 +1,83 @@
+.wordBtn {
+  border: solid;
+  border-width: 1px;
+  border-color: lightgrey;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+#buttonbar button {
+  padding: 8px;
+    width: 40px
+}
+
+#reset {
+  width: 80px !important
+}
+
+th, td {
+  text-align: center;
+}
+
+.yellow {
+  background-color: #fdffb6
+}
+.pink {
+  background-color: #ffadad
+}
+.green {
+  background-color: #caffbf
+}
+.blue {
+  background-color: #9bf6ff
+}
+.grey {
+  text-decoration: underline;
+}
+
+#sourceText {
+  word-wrap: break-word;
+  height: auto;
+  border: solid;
+  border-width: 1px;
+  border-color: lightgrey;
+  padding: 10px;
+}
+
+.selectedTIDE {
+  font-weight: bold;
+  opacity: 1 !important;
+}
+
+#selectedTIDE {
+  width: 100%;
+  margin: 8px;
+  text-align: center;
+  font-weight: bold;
+}
+
+body {
+  padding: 40px
+}
+
+#selection {
+  text-align: center;
+  padding: 0 0 8px;
+}
+
+
+legend {
+  display: block;
+  padding-inline-start: 2px;
+  padding-inline-end: 2px;
+  border-width: initial;
+  border-style: none;
+  border-color: initial;
+  border-image: initial;
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin-bottom: 0.5rem;
+  font-size: calc(1.275rem + 0.3vw);
+  line-height: inherit;
+}

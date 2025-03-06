@@ -1,0 +1,242 @@
+/* CSS Document */
+
+
+.waButton {
+	background-color:#E6E6E6;
+	border:2px solid #18453B;
+	display:inline-block;
+	cursor:pointer;
+	color:#18453B;
+	font-family:Arial;
+	font-size:13px;
+	font-weight:bold;
+	padding:9px 12px;
+	text-decoration:none;
+	border-radius: 5px 5px 5px 5px;
+	margin-bottom: 6px;
+}
+.waButton:hover {
+	background-color:#F9FB9F;
+}
+.waButton:active {
+	position:relative;
+	top:1px;
+}
+
+.waButtonSmall {
+	background-color:#E6E6E6;
+	border:1px solid #18453B;
+	display:inline-block;
+	cursor:pointer;
+	color:#18453B;
+	font-family:Arial;
+	font-size:13px;
+	font-weight:bold;
+	padding:4px 6px;
+	text-decoration:none;
+	border-radius: 5px 5px 5px 5px;
+	margin-bottom: 8px;
+}
+.waButtonSmall:hover {
+	background-color:#F9FB9F;
+}
+.waButtonSmall:active {
+	position:relative;
+	top:1px;
+}
+
+.waButtonLarge {
+	background-color:#E6E6E6;
+	border:2px solid #18453B;
+	display:inline-block;
+	cursor:pointer;
+	color:#18453B;
+	font-family:Arial;
+	font-size:15px;
+	font-weight:bold;
+	padding:9px 12px;
+	text-decoration:none;
+	border-radius: 5px 5px 5px 5px;
+	margin-bottom: 3px;
+}
+.waButtonLarge:hover {
+	background-color:#F9FB9F;
+}
+.waButtonLarge:active {
+	position:relative;
+	top:1px;
+}
+
+.table_title {
+	font-family:Arial;
+	font-size:13px;
+	font-weight:bold;
+	color: #18453B;
+	padding-right: 1px;
+    padding-left: 10px;
+}
+.table_row {
+	font-family:Arial;
+	font-size:13px;
+	padding-right: 1px;
+    padding-left: 10px;
+}
+
+.msg_title {
+	font-family:Arial;
+	font-size:24px;
+	font-weight:bold;
+	color: #18453B;
+}
+
+#force_right {
+    position: absolute; /*or fixed*/
+    right: 0px;
+    font: 12px/1.6 Arial, 'Liberation Sans', FreeSans, sans-serif;
+}
+
+.input_label {
+    background: #EEE;
+    border: 1px solid #CCC;
+    border-radius: 5px 0 0 5px;
+    border-right: 1px solid #FFF;
+    display: inline-block;
+    height: 36px;
+    width: 275px;
+    line-height: 36px;
+    margin-right: 0;
+    width: 80px!important;
+    vertical-align: middle;
+}
+.contact input[type=text] {
+    background: #FFF;
+    border: 1px solid #CCC;
+    border-radius: 0 5px 5px 0;
+    color: #333;
+    font: 13px/1.6 Arial, 'Liberation Sans', FreeSans, sans-serif;
+    height: 38px;
+    line-height: 25px;
+    margin: 0px 8px 0px -5px;
+    outline: none;
+    padding: 0 3px;
+    width: 200px;
+    vertical-align: middle;
+}
+
+#error_msg {
+	font-family: sans-serif;
+    font-size: 13px;
+    text-align: left;
+	color: red;
+	text-indent: 10px;
+}
+#footer {
+    background: #FFF;
+    position: fixed;
+    bottom: 0;
+	left: 0;
+	height: 20px;
+    width: 100%;
+	font-family: sans-serif;
+    font-size: 11px;
+    text-align: center;
+	padding-top: 4px;
+}
+
+.user label {
+    background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABARpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIF)
+}
+
+/**
+ * Form Styles
+ */
+label {
+	display: block;
+	margin-bottom: 0.5em;
+}
+
+.label-normal {
+	font-weight: normal;
+}
+
+.pattern {
+	color: #808080;
+	font-size: 0.8em;
+	font-weight: normal;
+}
+
+.supports-color .color,
+.supports-date .date,
+.supports-time .time,
+.supports-month .month {
+	display: none;
+}
+
+.warning_text {
+	color: red;
+	font-size: 0.8em;
+	font-size: 0.8em;
+}
+/**
+ * Errors
+ */
+.error {
+	border-color: red;
+}
+
+.error-message {
+	color: red;
+	font-style: italic;
+	font-size: 11px;
+	margin-bottom: 1em;
+}
+
+
+
+.popup {
+	position:relative;
+	z-index:999;
+	width:500px;
+	height:30px;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	text-align:left;
+	font-size:15px;;
+	color: black;
+	background-color: #48D0B2;
+	padding-top:5px;
+	display:none;
+	margin:2px 0px 0px 0px;
+}
+
+.roster {
+	background-color: #c4c4c4;
+ 	width: 600px;
+  	border: 1px solid #18453B;
+}
+
+
+#quiztitle {
+	font-family: sans-serif;
+    font-size: 26px;
+    text-align: left;
+	color: white;
+	text-indent: 10px;
+	background-color: #18453B;
+	 padding: 5px 5px 5px 5px;
+}
+#quizheading {
+	font-family: sans-serif;
+    font-size: 18px;
+    text-align: left;
+	color: black;
+	text-indent: 10px;
+	background-color: #D0B833;
+	padding: 5px 5px 5px 5px;
+}
+#quizbody {
+	font-family: sans-serif;
+    font-size: 18px;
+    text-align: left;
+	color: black;
+	padding: 5px 5px 5px 5px;
+}

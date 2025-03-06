@@ -1,0 +1,92 @@
+.resource-descriptions{
+    display:flex;
+    flex-direction: column;
+}
+
+.content{
+    display:flex;
+    flex-direction: row;
+}
+
+aside {
+    width: 30%;
+    padding: 10px;
+    /* background-color:rgb(1, 89, 71); */
+
+    /* color: white; */
+    margin-left: 20px;
+    margin-right: 20px;;
+}
+
+aside hr{
+    width:100%;
+    height: 1px;
+
+    margin: 0;
+    padding: 0;
+
+}
+
+aside a{
+    display: block; 
+    text-decoration: none;
+
+    margin: 0;
+    padding: 0;
+    padding-left: 10px;
+
+    /* text-align: center; */
+    align-content: center;
+
+    width: 100%;
+    height: 10%;
+    color: inherit; /* Keeps the text color the same as the surrounding content */
+    transition: background-color 0.3s ease; 
+}
+
+aside a:hover {
+    background-color: black; 
+    color: white;
+}
+
+.resource-container{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 30px; 
+    /* border: 2px solid rgb(106, 255, 0); */
+
+    justify-items: center;
+
+}
+
+.resource{
+    display:flex;
+    flex-direction: column;
+    /* border: 2px solid red; */
+
+    text-align: center;
+    align-items: center;
+
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    height: 100%;
+}
+
+.resource h4{
+    margin:0;
+    padding:0;
+}
+
+.resource p{
+    text-align: center;
+}
+
+.resource img{
+    height: 60%;
+    width:80%;
+
+    margin:0;
+    padding:0;
+}

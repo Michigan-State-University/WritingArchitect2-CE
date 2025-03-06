@@ -1,0 +1,211 @@
+body{
+    /*Get rid of X scroll bar popping up on bottom of screen when divs are added to main*/
+    overflow-x: hidden;
+}
+
+main{
+    display:grid;
+    justify-content: center; /*Center the bio content*/
+    text-align: justify;
+    text-justify: inter-word;
+    overflow-x:hidden;
+    padding-top: 5%;
+
+}
+
+main a.link:hover{
+    opacity:0.5;
+}
+
+.explanation{
+    display:flex;
+    flex-direction: column;
+    margin:0px;
+    padding:0px;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.explanation p:nth-of-type(1){
+    display:flex;
+    margin:0px;
+    padding:0px;
+    margin-bottom:40px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3vw;
+}
+
+.explanation p:nth-of-type(2){
+    display:flex;
+    margin:0px;
+    padding:0px;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2vw;
+}
+
+
+
+section.wrapper{
+    display:flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+    height: 50vh;
+    width: 80vw;
+    overflow-x: hidden;
+
+} 
+
+
+
+.box{
+    flex:1;  /*Take up 50% of the row*/
+    padding:5px;
+    margin:2px;
+    background: black;  /*Frames the picture in balck*/
+
+}
+
+div.description {
+    flex:1;  /*Take up 50% of the row*/
+    display:flex;
+    overflow-y: scroll;
+    text-align: justify;
+    text-justify: inter-word;
+    justify-content: center;
+    overflow-x: hidden;
+
+    /*Add a little space between the text and the photo/scroll bar*/
+    padding-left: 10px;
+    padding-right:5px;
+}
+
+span{
+    font-size:xx-large;
+    font-weight: 530;
+    text-align: center;
+}
+
+.headshot{
+    flex:1;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    justify-content: center;
+    object-position:center 35%; /*Puts my face into view*/
+}
+
+hr{
+    border: none;            /* Removes default border */
+    height: 2px;             /* Sets thickness of the line */
+    background-color: grey;  /* Sets the line color */
+    width: 80vw;              /* Adjusts the width of the line */
+    margin: 40px auto;  
+}
+
+main p{
+    text-align: justify;
+    text-justify: inter-word;
+    
+}
+
+main p.funFactTitle{
+    text-align: center;
+    text-justify: inter-word;
+    justify-content: center; 
+    font-size: x-large;
+    font-weight: 500;
+
+}
+
+main p.funfact{
+    text-align: center;
+    text-justify: inter-word;
+    justify-content: center;
+}
+
+/* Make sure fonts match MSU branding */
+/* 1. Set default font for the entire website */
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    font-weight: 400; 
+    font-size: 16px; 
+    color: #000; 
+}
+
+/* 2. Headings use Georgia */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Georgia', serif;
+    font-weight: 600; /* Semi-bold */
+}
+
+/* 3. Ensure Inter is used for all key elements */
+p, a, button, input, textarea, select, ul, ol, li, nav {
+    font-family: 'Inter', sans-serif;
+}
+
+/* 4. Links - Remove underline and set colors */
+a {
+    text-decoration: none;
+    color: #18453B; /* MSU Green */
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: black; 
+}
+
+/* 5. Buttons - MSU Style */
+button {
+    background-color: #18453B; /* MSU Green */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600; 
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: black;
+}
+
+/* 6. Ensure form elements match MSU branding */
+input, textarea, select {
+    font-size: 16px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+
+/* Manages nav display with changing screen widths*/
+@media screen and (max-width:650px){
+    /*Switches rows to columns and makes overflow have visible handling */
+    section.wrapper{
+        flex-direction: column;
+        margin: 0;
+        padding: 0;
+        width: 80vw;
+        height:auto;
+        overflow-x: visible;
+    
+    }
+
+    div.description {
+
+        overflow-y: visible;
+        text-align: justify;
+        text-justify: inter-word;
+    }
+}
