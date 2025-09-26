@@ -31,7 +31,7 @@ class QuizTemplate
 			QT_PROMPT_1=:qt_1, 
 			QT_PROMPT_2=:qt_2, 
 			QT_PROMPT_3=:qt_3, 
-			QT_GRADES=:qt_grades
+			QT_GRADES=:qt_grades,
 			QT_STATUS=:qt_status,
 			QT_MODIFIED_BY=:guc,
 			QT_MODIFIED_ON=UTC_TIMESTAMP()";
