@@ -2,10 +2,10 @@
 <?php
 $err_msg = "";
 
-$emsg = "";
+$msg = "";
 if (isset($_GET["em"])) $msg = $_GET["em"];
 
-if ($emsg == 'f') $err_msg = "Login attempt failed";
+if ($msg == 'f') $err_msg = "Login attempt failed";
 ?>
 <html lang="en">
 
