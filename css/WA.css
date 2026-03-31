@@ -141,6 +141,12 @@
     font-size: 11px;
     text-align: center;
 	padding-top: 4px;
+	z-index: 1000;
+}
+
+/* Add padding to page content to prevent footer from overlapping */
+#page-content-wrapper {
+    padding-bottom: 30px;
 }
 
 .user label {
