@@ -1,0 +1,197 @@
+/* ----------------------------------------------
+  General Page Styling
+------------------------------------------------ */
+body {
+  padding: 40px;
+  font-family: 'Inter', sans-serif;
+}
+
+legend {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  font-size: calc(1.275rem + 0.3vw);
+  font-weight: 600;
+}
+
+/* ----------------------------------------------
+  Button Styling (TIDE Buttons and Reset)
+------------------------------------------------ */
+#tide-buttons {
+  margin-bottom: 15px; /* Space below the button area */
+}
+
+#tide-buttons button {
+  margin-right: 5px; /* Space between buttons */
+  padding: 8px; /* Padding inside buttons */
+  width: 40px; /* Standard width for TIDE buttons */
+  font-weight: bold;
+  border: 1px solid lightgrey;
+  cursor: pointer;
+  border-radius: 4px;
+  color: black;
+}
+
+/* Reset Button is wider and lighter colored */
+#btn-reset {
+  width: 80px !important;
+  background: #eeeeee;
+  color: #333;
+}
+
+/* Button Background Colors for TIDE Types */
+#btn-T { background-color: #ffadad; } /* Pink for Topic */
+#btn-I { background-color: #fdffb6; } /* Yellow for Important Evidence */
+#btn-D { background-color: #caffbf; } /* Green for Detail */
+#btn-E { background-color: #9bf6ff; } /* Blue for Ending */
+#btn-C { background-color: #afafaf; text-decoration: underline; } /* Grey for Copy/Error */
+
+#current-selection {
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* ----------------------------------------------
+  Word Blocks (Student Essay Words)
+------------------------------------------------ */
+.word {
+  display: inline-block;
+  margin: 2px; /* Space around each word block */
+  padding: 2px 4px; /* Padding inside word block */
+  border: 1px solid lightgrey; /* Grey box border */
+  border-radius: 4px; /* Slightly rounded corners */
+  user-select: none; /* Prevent user from text-selecting words normally */
+  font-weight: normal;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Special Temporary Highlight when Dragging */
+.word.dragging {
+  outline: 2px dashed #333;
+  background-color: #ddd !important;
+}
+
+/* Container holding the sample text */
+#sample-text {
+  border: 1px solid lightgrey;
+  padding: 10px;
+  min-height: 100px;
+  margin-bottom: 20px;
+  word-wrap: break-word;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Live Preview while dragging selection (before mouse up) */
+.dragging-preview {
+  background-color: #ddd !important;
+  outline: 2px dashed #888;
+}
+
+/* ----------------------------------------------
+  Score Tables (Top Totals + Selections)
+------------------------------------------------ */
+/* General Table Layouts */
+#score-totals table,
+#selection-table,
+#answer-score-table,
+#answer-score-totals table {
+  width: 100%;
+  max-width: 800px;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+/* Common Table Cell Styling */
+#score-totals th, #score-totals td,
+#selection-table th, #selection-table td,
+#answer-score-table th, #answer-score-table td,
+#answer-score-totals th, #answer-score-totals td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 8px;
+}
+
+/* Special sizing for answer key top totals table */
+#answer-score-totals table {
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+
+/* Selections Table Specific */
+#selection-table {
+  margin-top: 20px;
+}
+
+#long-word-count-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 300px;
+  padding: 12px 16px;
+  margin: 1.5em 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fafafa;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#long-word-count {
+  background-color: #fff;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-weight: 600;
+  font-size: 18px;
+  min-width: 40px;
+  text-align: center;
+  color: #333;
+}
+
+
+
+/* ----------------------------------------------
+  Answer Key Area
+------------------------------------------------ */
+#answer-toggle {
+  margin-top: 10px;
+}
+
+/* Container for Correct Answer Paragraph */
+.answer-text {
+  border: 1px solid #ccc;
+  padding: 10px;
+  background: #f9f9f9;
+  min-height: 100px;
+  margin-bottom: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Each word inside the Answer Text */
+.answer-text span {
+  font-weight: normal;
+  font-size: inherit;
+  line-height: inherit;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+/* ----------------------------------------------
+  Color Classes for Highlighting
+------------------------------------------------ */
+/* Background colors matching TIDE types */
+.pink { background-color: #ffadad; } /* Topic */
+.yellow { background-color: #fdffb6; } /* Important Evidence */
+.green { background-color: #caffbf; } /* Detail */
+.blue { background-color: #9bf6ff; } /* Ending */
+.grey { background-color: #afafaf; text-decoration: underline; } /* Copy/Error */
+
+.selectedTIDE {
+  font-weight: bold;
+  opacity: 1 !important;
+}

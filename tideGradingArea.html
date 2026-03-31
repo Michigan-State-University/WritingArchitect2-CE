@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Page title and style sheets -->
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Georgia&display=swap" rel="stylesheet">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <link rel="stylesheet" href="css/header.css" />
+        <link rel="stylesheet" href="css/navbar.css" />
+        <link rel="stylesheet" href="css/main.css" />
+        <link rel="stylesheet" href="css/footer.css" />
+
+        <!-- Unique to this page -->
+        <title>Educators - Writing Architect</title>
+        <link rel="stylesheet" href="css/forEducators.css" />
+        <link rel="stylesheet" href="css/tidePractice.css">
+        <link rel="stylesheet" href="css/tideGradingArea.css">
+
+    </head>
+    <body class = "banner">
+        <header> <!--Banner image for the top of the web page-->
+            <img class="header" src="images/banner.jpg" alt="Rocky Background" />
+        </header>
+        <nav>  <!--Navigation bar with links to other pages and project title-->
+            <ul class="fullscreen">
+                <li class = "left"><a>Writing Architect</a></li>
+                <li><a class = "link" href="/">Home</a></li>
+                <li><a class = "link" href="/research.html">Research</a></li>
+                <li><a class = "link" href="/forEducators.html">For Educators</a></li>
+                <li><a class = "link" href="/main/login.php?em=f">Login</a></li>
+                <li><a class = "link" href="/main/login.php?em=f" target="_blank"><img src="images/WA-logo-computer.png" alt="Writing Architect" /></a></li>
+            </ul>
+            <ul class="menubar">
+                <li class = "left"><a>Writing Architect</a></li>
+                <li><!--Checkbox to make menu button toggle on/off dropdown menu visibility-->
+                    <label class="switch">
+                        <a class="link"><img class="menuicon" src="images/menu-bar.png" alt="Menu" /></a>
+                        <input type="checkbox">
+                        <span class="dropdown-menu">
+                            <ul>
+                                <li><a class = "link" href="/">Home</a></li>
+                                <li><a class = "link" href="/research.html">Research</a></li>
+                                <li><a class = "link" href="/forEducators.html">For Educators</a></li>
+                                <li><a class = "link" href="/main/login.php?em=f">Login</a></li>
+                            </ul>
+                        </span>
+                    </label>
+                </li>
+            </ul>
+        </nav>
+        <main>
+            <div class="content">
+                <aside>
+                  <hr>
+                    <a href="/forEducators.html">For Educators</a>
+                  <hr>
+                    <a href="/tideResources.html">TIDE Home</a>
+                  <hr>
+                    <a href="/tideLessons.html">TIDE Lessons</a>
+                  <hr>
+                    <a href="/tideExamples.html">TIDE Examples</a>
+                  <hr>
+                    <a href="/tidePracticeArea.html">TIDE Practice Area</a>
+                  <hr>
+                </aside>
+                <div class="resource-descriptions">
+                  <section class="page-description">
+                    <h2>TIDE Scoring Area</h2>
+                    <p>
+                      Use this area to upload documents and grade them using out TIDE scoring tool. Download your results at the bottom of the page.
+                    </p>
+                    <p>
+                      <!-- Short instruction text for the user -->
+                      Select a TIDE category, then click words to tag them. Each word or phrase will appear below, where you can adjust the score or delete it.
+                    </p>
+
+                    <div id="file-upload-container">
+                      <input type="file" id="file-upload" accept=".pdf,.docx" />
+                      <p id="upload-status"><em>No file uploaded yet.</em></p>
+                    </div>
+                  
+                    <!-- Button bar: users select a TIDE element (T, I, D, E, C) or reset -->
+                    <div id="tide-buttons">
+                      <!-- TIDE Category Buttons -->
+                      <button onclick="selectTIDE('T')" id="btn-T">T</button> <!-- Topic -->
+                      <button onclick="selectTIDE('I')" id="btn-I">I</button> <!-- Important Evidence -->
+                      <button onclick="selectTIDE('D')" id="btn-D">D</button> <!-- Detail -->
+                      <button onclick="selectTIDE('E')" id="btn-E">E</button> <!-- Ending -->
+                      <button onclick="selectTIDE('C')" id="btn-C">C</button> <!-- Copy/Error -->
+                      
+                      <!-- Reset Button: clears all selections -->
+                      <button onclick="resetAll()" id="btn-reset">Reset</button>
+                      
+                      <!-- Dynamic message showing which category is currently selected -->
+                      <p id="current-selection">
+                        <em>No scoring type selected.</em>
+                      </p>
+                    </div>
+
+                    <!-- Score Totals Table: shows running totals for each TIDE category -->
+                    <div id="score-totals">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>T</th><th>I</th><th>D</th><th>E</th><th>C</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr id="score-row">
+                            <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td> <!-- These will update dynamically -->
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                
+                    <!-- Essay Text Area: dynamically generates word-by-word clickable blocks -->
+                    <div id="sample-text">
+                      <!-- Word blocks will be inserted here by JavaScript -->
+                    </div>
+
+                    <!-- 7+ letter Word Count Box -->
+                    <div id="long-word-count-box">
+                      <label for="long-word-count"><strong>Words with 7+ letters:</strong></label>
+                      <div id="long-word-count">0</div>
+                    </div>
+                
+                    <!-- Selections Table: lists all user selections -->
+                    <h3>Selections</h3>
+                    <table id="selection-table">
+                      <thead>
+                        <tr>
+                          <th>Element</th> <!-- T/I/D/E/C category -->
+                          <th>Selected Text</th> <!-- Words user selected -->
+                          <th>Score</th> <!-- 1 or 2 -->
+                          <th>Delete</th> <!-- Delete button for each selection -->
+                        </tr>
+                      </thead>
+                      <tbody id="selection-body">
+                        <!-- JavaScript will insert user's selections here -->
+                      </tbody>
+
+                      <div id="export-buttons">
+                        <button onclick="downloadPDF()">Download PDF</button>
+                        <button onclick="downloadDOCX()">Download DOCX</button>
+                      </div>
+                    </table>
+                
+                </section>
+                
+                </div>
+            </div>
+            <hr>
+        </main>
+        <footer>
+            <p>©Copyright 2024</p>
+        </footer>
+    </body>
+</html>
+
+<!-- External Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+<script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@7.7.0/build/index.umd.js"></script>
+
+<!-- Fix docx if exported as DOCX instead of lowercase -->
+<script>
+  if (typeof window.docx === "undefined" && typeof window.DOCX !== "undefined") {
+    window.docx = window.DOCX;
+  }
+  console.log("DOCX test:", typeof window.docx);
+</script>
+
+<!-- Your Custom Scripts (AFTER docx is loaded) -->
+<script src="js/tideGradingArea.js"></script>
+<script src="js/tideFileUpload.js"></script>
+
+
+
+
+
+
+
