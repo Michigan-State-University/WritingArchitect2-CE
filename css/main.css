@@ -13,6 +13,21 @@ main{
 
 }
 
+.description ul {
+    margin-left: 1.5em;
+    padding-left: 1em;
+}
+
+.description ul li {
+    margin-bottom: 0.5em;
+    line-height: 1.5;
+}
+
+.highlight-link {
+    color: blue;
+    text-decoration: underline;
+}
+
 main a.link:hover{
     opacity:0.5;
 }
@@ -208,4 +223,21 @@ input, textarea, select {
         text-align: justify;
         text-justify: inter-word;
     }
+}
+
+
+.construction{
+    color: red;
+    font-size: xx-large;
+}
+
+
+/* Manages nav display with changing screen widths*/
+@media screen and (max-width:650px){
+    /*Switches rows to columns and makes overflow have visible handling */
+    .construction{
+        font-size: large;
+    }
+
+
 }
