@@ -3,14 +3,30 @@ const login_button = document.querySelector(".login_submit");
 
 // Check if user data exists in localStorage and pre-fill form if so
 window.onload = function() {
+    // Re-direct user to forEducators page if form has already been submitted
     if(localStorage.getItem("teacherData")) {
-        const teacherData = JSON.parse(localStorage.getItem("teacherData"));
-        document.querySelector("#first_name").value = teacherData.firstName;
-        document.querySelector("#last_name").value = teacherData.lastName;
-        document.querySelector("#login_email").value = teacherData.email;
-        document.querySelector("#role").value = teacherData.role;
-        console.log("Form already filled out:");
-        window.location.href = "/forEducators.html";
+        ///////////////////
+        // This commented out section can be used to check if a user has a specific data element form the 
+        // Input field locally stored and make them perform the input again if it is not present. 
+        // This can be used if a new field has been added and you want users who have already filled 
+        // out the form to submit a new entry with the new field included. 
+        ///////////////////
+
+        // const teacherData = JSON.parse(localStorage.getItem("teacherData"));
+
+        // let item = teacherData.locallyStoredName;
+        // if(!item)
+        // {
+
+        //     console.log(item);
+        //     console.log("nuh uh");
+        //     return;
+        // }
+
+
+        // Comment out if you have already submitted a form and want to view the page
+        window.location.href = "/forEducators.html";  
+        console.log("Hello World");
     }
 }
 
