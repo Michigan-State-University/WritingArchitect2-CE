@@ -159,7 +159,7 @@ class Account
 				$stmt->execute();
 			}
 			//save class if student
-			if ($userlevel == "STUDENT" && ($GLOBALS['USER_LEVEL'] == 'ADMIN' || $GLOBALS['USER_LEVEL'] == 'SCORER')) {
+			if ($userlevel == "STUDENT" && ($GLOBALS['USER_LEVEL'] == 'ADMIN' || $GLOBALS['USER_LEVEL'] == 'SCORER' || $GLOBALS['USER_LEVEL'] == 'TEACHER')) {
 				$query = "SELECT PUPIL_ID from config_pupils where PUPIL_STUDENTID=:acct_id";
 				$stmt = $db->prepare($query);
 				$stmt->bindValue(':acct_id', $acct_id, PDO::PARAM_INT);
