@@ -1,21 +1,50 @@
+/* Page heading */
+.page-description {
+    max-width: 60vw;
+    padding: 1rem;
+
+    margin-top: 0;
+    padding-top:0;
+    line-height: 1.6;
+}
+
+.page-description h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.page-description ul {
+    margin-left: 1.5rem;
+    padding-left: 0;
+}
+
+
+
 .resource-descriptions{
     display:flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .content{
     display:flex;
     flex-direction: row;
+
+    width: 90vw;
 }
 
 aside {
-    width: 30%;
-    padding: 10px;
-    /* background-color:rgb(1, 89, 71); */
+  display: flex;
+  flex-direction: column;
+  width: 15%;
+  /* padding: 10px; */
+  /* background-color:rgb(1, 89, 71); */
 
-    /* color: white; */
-    margin-left: 20px;
-    margin-right: 20px;;
+  /* color: white; */
+  margin-left: 20px;
+  margin-right: 20px;;
+
+  /* border: 1px solid red; */
 }
 
 aside hr{
@@ -25,6 +54,8 @@ aside hr{
     margin: 0;
     padding: 0;
 
+    /* border: 1px solid red; */
+
 }
 
 aside a{
@@ -33,13 +64,13 @@ aside a{
 
     margin: 0;
     padding: 0;
-    padding-left: 10px;
 
-    /* text-align: center; */
-    align-content: center;
+    display: flex;
+    align-items: center;
+
 
     width: 100%;
-    height: 10%;
+    height: 80px;
     color: inherit; /* Keeps the text color the same as the surrounding content */
     transition: background-color 0.3s ease; 
 }
@@ -50,14 +81,35 @@ aside a:hover {
 }
 
 .resource-container{
-    display:grid;
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 30px; 
-    /* border: 2px solid rgb(106, 255, 0); */
-
-    justify-items: center;
-
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
 }
+
+
+.resource-container ul {
+  margin: 5px;
+}
+
+
+.resource-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* spacing between title, PDF, and DOCX */
+  flex-wrap: nowrap;
+  white-space: nowrap; /* Prevent breaking to a new line */
+}
+
+.resource-item a {
+  /* text-decoration: none; */
+  color: #004466;
+  font-weight: bold;
+}
+
+.resource-item a:hover {
+  text-decoration: underline;
+}
+
 
 .resource{
     display:flex;
@@ -79,6 +131,38 @@ aside a:hover {
     padding:0;
 }
 
+
+.resource_links {
+  display: flex;
+  justify-content: space-between;
+  /* border: 1px solid #ccc; */
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  background-color: #f9f9f9;
+}
+
+.resource_button {
+  display: flex;
+  align-items: center;
+  /* gap: 0.5rem; */
+  /* text-decoration: none; */
+  color: #000;
+  /* font-weight: 600; */
+  background-color: #e0e0e0;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+  width: 50%;
+  height: 40%;
+  margin: 10px;
+
+}
+
+.resource_button:hover {
+  background-color: #ccc;
+}
+
+
 .resource p{
     text-align: center;
 }
@@ -90,3 +174,120 @@ aside a:hover {
     margin:0;
     padding:0;
 }
+
+
+/* Videos */
+.video-section {
+    padding: 2rem;
+    background: #f9f9f9;
+    width: 60vw;
+  }
+  
+  .video-block {
+    margin-bottom: 3rem;
+  }
+  
+.video-section h2{
+    text-align: center;
+}
+
+.underline {
+    text-decoration: underline;
+  }
+
+  .video-block h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .video-container {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+  }
+  
+  .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  
+
+
+/* Pictures */
+.picture-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Flexible columns */
+    gap: 30px;
+    justify-items: center;
+    width: 60vw;
+    margin: auto;
+}
+
+.page_graphic{
+    display:flex;
+    align-self: center;
+    justify-self: center;
+}
+
+.picture {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    width: 100%;
+    overflow: hidden;
+}
+
+.picture img {
+    width: 100%;
+    height: 200px; /* Set a consistent height */
+    object-fit: cover; /* Ensures image fills area and stays cropped nicely */
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Manages nav display with changing screen widths*/
+@media screen and (max-width: 650px) {
+    .content {
+      flex-direction: column;
+      width: 100vw;
+    }
+
+    .page-description{
+      max-width: 80vw;
+      width: 80vw;
+    }
+  
+    aside {
+      width: 100%;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    .resource-container {
+    grid-template-columns: 1fr; /* One column only */
+    }
+  
+    .video-section {
+      width: 100vw;
+      padding: 1rem;
+    }
+  
+    .video-container {
+      padding-top: 56.25%;
+    }
+
+    .page_graphic{
+      width: 100vw;
+    }
+  }
+  
+  
