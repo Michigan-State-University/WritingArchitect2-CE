@@ -10,11 +10,145 @@ ini_set('display_errors', '1'); // DEVELOPMENT ONLY
 $database = new Database();
 $db = $database->connect();
 
+function get_all_classes($db) {
+    $sql = "SELECT CLASS_ID, CLASS_NAME 
+            FROM config_classes 
+            ORDER BY CLASS_ID ASC";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 $secure_access = check_security($db);
 
 $U_LEVEL = isset($_REQUEST['USER_LEVEL']) ? $_REQUEST['USER_LEVEL'] : die();
 $uid = isset($_REQUEST['uid']) ? $_REQUEST['uid'] : die();
 $mode = isset($_POST['mode']) ? $_POST['mode'] : "";
+
+if ($mode == 'UPLOAD_CSV') {
+    if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] == UPLOAD_ERR_OK) {
+        $tmpName = $_FILES['csv_file']['tmp_name'];
+
+        // Fix deprecation warning
+        $rows = array_map(function($line) {
+            return str_getcsv($line, ",", '"', "\\"); 
+        }, file($tmpName));
+
+		$rowCount = count($rows);
+
+		// Check that row amount is reasonable/bellow maximum
+		$maxRows = 5000;
+		if ($rowCount > $maxRows) {
+			$cntl_message = "Too many rows: Please upload <= 5000 new accounts at a time. Bulk user accounts not saved.";
+			error_log("CSV upload rejected: too many rows ($rowCount > $maxRows)");
+			return;
+		}
+
+        $header = array_map('trim', array_shift($rows)); // first row = headers
+
+		// Required headers
+		$requiredHeaders = [
+			'USER_CODE',
+			'USER_STATUS',
+			'USER_FIRST_NAME',
+			'USER_LAST_NAME',
+			'USER_EMAIL',
+			'USER_PASSWORD',
+			'USER_CLASSID'
+		];
+
+		// Check for missing headers
+		$missing = array_diff($requiredHeaders, $header);
+		if (!empty($missing)) {
+			$cntl_message = "Not all headers present- Please make sure you have columns: <br> USER_CODE, USER_STATUS, USER_FIRST_NAME, USER_LAST_NAME, USER_EMAIL, USER_PASSWORD, USER_CLASSID. <br> Bulk user accounts not saved.";
+			error_log("CSV upload rejected: missing headers: " . implode(', ', $missing));
+			return;
+		}
+
+        $output = [];
+        $output[] = array_merge($header, ['STATUS']);
+
+        $U_LEVEL = "STUDENT";   // force upload type to student
+
+        foreach ($rows as $row) {
+            $data = array_combine($header, $row);
+
+            $acct = new Account($db);
+            $acct->USER_CODE         = $data['USER_CODE'] ?? '';
+            $acct->USER_STATUS       = $data['USER_STATUS'] ?? '';
+            $acct->USER_FIRST_NAME   = $data['USER_FIRST_NAME'] ?? '';
+            $acct->USER_LAST_NAME    = $data['USER_LAST_NAME'] ?? '';
+            $acct->USER_ORGANIZATION = $GLOBALS['USER_ORGANIZATION'];
+            $acct->USER_EMAIL        = $data['USER_EMAIL'] ?? '';
+            $acct->USER_PASSWORD     = $data['USER_PASSWORD'] ?? '';
+            $acct->USER_CLASSID      = $data['USER_CLASSID'] ?? '';  
+
+            $rowResult = "";
+            $status    = "";
+
+            switch ($GLOBALS['USER_LEVEL']) {
+                case 'ADMIN':
+                    $rowResult = $acct->save_account($db, "0", $U_LEVEL);
+                    break;
+                case 'TEACHER':
+					$rowResult = $acct->save_account($db, "0", $U_LEVEL);
+                    break;
+                case 'SCORER':
+					$rowResult = $acct->save_account($db, "0", $U_LEVEL);
+                    break;
+                default:
+                    $rowResult = "DENIED";
+                    break;
+            }
+
+            if ($rowResult != "") {
+                switch ($rowResult) {
+                    case "NOT UNIQUE":
+                        $status = "DUPLICATE";
+                        break;
+                    case "DENIED":
+                        $status = "DENIED";
+                        break;
+                    default:
+                        $status = "SUCCESS";
+                        break;
+                }
+            } else {
+                $status = "ERROR";
+            }
+
+            $output[] = array_merge($row, [$status]);
+        }
+
+        // send CSV back with result values next to student info
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="upload_results.csv"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        ini_set('display_errors', '0');
+        ini_set('log_errors', '1');
+        error_reporting(E_ALL);
+
+        $out = fopen('php://output', 'w');
+        foreach ($output as $line) {
+            fputcsv($out, $line, ",", '"', "\\");
+        }
+        fclose($out);
+
+		$cntl_message = "Bulk user accounts saved: Check output for individual account creation results.";
+
+        exit;
+    }
+}
+
+
 
 $ed_acct = new Account($db);
 $ed_acct->USER_CODE = $uid;
@@ -187,7 +321,7 @@ switch ($U_LEVEL) {
 							<td class="EditTitle"><label for="USER_LAST_NAME">Last Name:</label></td>
 							<td><input id="USER_LAST_NAME" value="<?php echo $ed_acct->USER_LAST_NAME; ?>" class="form-control" type="text" name="USER_LAST_NAME" maxlength="50" required></td>
 						</tr>
-						<?php if (($GLOBALS['USER_LEVEL'] == 'ADMIN' || $GLOBALS['USER_LEVEL'] == 'SCORER') && $U_LEVEL == 'STUDENT') {
+						<?php if (($GLOBALS['USER_LEVEL'] == 'ADMIN' || $GLOBALS['USER_LEVEL'] == 'SCORER' || $GLOBALS['USER_LEVEL'] == 'TEACHER') && $U_LEVEL == 'STUDENT') {
 							// This handles class menu for the student
 						?>
 							<tr>
@@ -195,7 +329,7 @@ switch ($U_LEVEL) {
 								<td colspan="3"><?php create_class_menu($db, $ed_acct->USER_CLASSID, "USER_CLASSID"); ?></td>
 							</tr>
 							<?php } else {
-							if (($GLOBALS['USER_LEVEL'] == 'ADMIN' || $GLOBALS['USER_LEVEL'] == 'SCORER')) {
+							if (($GLOBALS['USER_LEVEL'] == 'ADMIN' || $GLOBALS['USER_LEVEL'] == 'SCORER' || $GLOBALS['USER_LEVEL'] == 'TEACHER')) {
 								// This handles MSU Level school menu
 							?>
 								<tr>
@@ -242,6 +376,52 @@ switch ($U_LEVEL) {
 						</tr>
 					</table>
 				</form>
+
+				<!-- Bulk Upload Students -->
+				<?php if ($U_LEVEL == 'STUDENT') { ?>
+					<hr>
+					<h3>Bulk Upload Students</h3>
+					<form id="csvupload" action="edit_user.php?id=<?php echo $GLOBALS["SESSION_ID"]; ?>&USER_LEVEL=<?php echo $U_LEVEL; ?>&uid=0" method="post" enctype="multipart/form-data">
+						<input type="hidden" name="mode" value="UPLOAD_CSV">
+						<input type="file" name="csv_file" accept=".csv" required>
+						<input type="submit" class="waButtonSmall" value="Upload CSV">
+					</form>
+					<p><small>CSV must include columns: USER_CODE, USER_STATUS, USER_FIRST_NAME, USER_LAST_NAME, USER_EMAIL, USER_PASSWORD, USER_CLASSID.</small></p>
+
+					<p><b>NOTE: </b>You must use the class ID for input into the system, see the below section to find the ID of your class.</p>
+					<hr><br>
+
+						<button onclick="toggleClassTable()" class="waButtonSmall">
+							Display Class IDs
+						</button>
+
+						<div id="classTable" style="display:none; margin-top:15px;">
+							<h4>Class IDs</h4>
+							<table border="1" cellpadding="8">
+								<tr>
+									<th>Class ID</th>
+									<th>Class Name</th>
+								</tr>
+
+								<?php
+								$classes = get_all_classes($db);
+								foreach ($classes as $class) {
+									echo "<tr>";
+									echo "<td>" . htmlspecialchars($class['CLASS_ID']) . "</td>";
+									echo "<td>" . htmlspecialchars($class['CLASS_NAME']) . "</td>";
+									echo "</tr>";
+								}
+								?>
+							</table>
+						</div>
+
+					<h5>Bulk Upload Templates</h5>
+					<p>Download a CSV template for bulk uploading:</p>
+					<ul>
+						<li><a href="../templates/students_template.csv" download>Download Student Template</a></li>
+					</ul>
+				<?php } ?>
+
 				<div id="dup_message"></div>
 			</div>
 		</div>
@@ -264,6 +444,13 @@ switch ($U_LEVEL) {
 				});
 		});
 	</script>
+	<script>
+		function toggleClassTable() {
+			const tbl = document.getElementById("classTable");
+			tbl.style.display = (tbl.style.display === "none") ? "block" : "none";
+		}
+	</script>
+
 </body>
 
 </html>
