@@ -171,19 +171,22 @@ $starttime = date('Y-m-d H:i:s');
 			if (!isNaN(duration)) {
 				var timer = duration,
 					minutes, seconds;
+				var timerDisplay = document.getElementById(display);
+				if (!timerDisplay) return;
+
+				minutes = parseInt(timer / 60, 10);
+				seconds = parseInt(timer % 60, 10);
+				seconds = seconds < 10 ? "0" + seconds : seconds;
+				timerDisplay.innerHTML = minutes + ":" + seconds;
 
 				var interVal = setInterval(function() {
 					minutes = parseInt(timer / 60, 10);
 					seconds = parseInt(timer % 60, 10);
 					seconds = seconds < 10 ? "0" + seconds : seconds;
-
-					if (timer <= 60) {
-						document.getElementById(display).innerHTML = minutes + ":" + seconds;
-					}
+					timerDisplay.innerHTML = minutes + ":" + seconds;
 					if (--timer < 0) {
-						timer = duration;
 						//SubmitFunction();
-						document.getElementById('TIMER_DISPLAY').innerHTML = "";
+						timerDisplay.innerHTML = "";
 						clearInterval(interVal);
 						document.getElementById('mpopupBox').style.display = "block";
 						//	document.getElementById("ESSAY").submit();
@@ -192,9 +195,8 @@ $starttime = date('Y-m-d H:i:s');
 			}
 		}
 
-		CountDown(900, "TIMER_DISPLAY");
-
 		$(document).ready(function() {
+			CountDown(900, "TIMER_DISPLAY");
 			//	$('#Q_ESSAY').bind('cut copy paste', function(event) {
 			//		event.preventDefault();
 			//	});

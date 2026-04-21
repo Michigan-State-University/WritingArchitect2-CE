@@ -22,8 +22,6 @@ $acc = new Account($db);
 $student_name = get_account_name($db, $quiz->Q_STUDENT_ID);
 $grader_name = get_account_name($db, $quiz->Q_GRADER_ID);
 
-$typing_length = strlen($quiz->Q_TYPING);
-
 // check status to determine which buttons should be locked out
 $save_disable = "";
 $complete_disable = "";
@@ -94,7 +92,8 @@ if ($quiz->Q_GRADING_STATUS == "Completed") {
 			q_typing_notes = document.getElementById("notes").value;
 			q_typing_chars = document.getElementById("count-response-char").innerHTML;
 			q_typing_words = document.getElementById("count-response-word").innerHTML;
-			q_typing_correct = document.getElementById("count-correct").value;
+			q_typing_correct = q_typing_chars;
+			document.getElementById("count-correct").value = q_typing_correct;
 			q_grader_id = document.getElementById("Q_GRADER_ID").value;
 			if (quiz_completed) q_grading_status = "Completed";
 			else q_grading_status = "In Progress";
@@ -134,14 +133,11 @@ if ($quiz->Q_GRADING_STATUS == "Completed") {
 		}
 
 		function update_correct() {
-			var incorrect = document.getElementById("count-incorrect").value;
-			var num_incorrect = parseInt(incorrect);
-			if (incorrect == "") num_incorrect = 0;
-			var typedwords = document.getElementById("wordlen").value;
-			var num_typedwords = parseInt(typedwords);
+			var responseChars = document.getElementById("count-response-char").innerHTML;
+			var numResponseChars = parseInt(responseChars, 10);
+			if (isNaN(numResponseChars)) numResponseChars = 0;
 
-			document.getElementById("count-correct").value = num_typedwords - num_incorrect;
-			//		document.getElementById("correct_word_display").innerHTML = num_typedwords - num_incorrect;
+			document.getElementById("count-correct").value = numResponseChars;
 		}
 	</script>
 </head>
@@ -193,15 +189,8 @@ if ($quiz->Q_GRADING_STATUS == "Completed") {
 					<span type="text" id="count-response-char" name="count-response-char"></span>
 					<span type="text" id="count-response-word" name="count-response-word"></span>
 					<br>
-
-					<label for=count-correct>count - incorrect</label>
-					<input type="number" min="0" max="<?php echo $typing_length ?>" id="count-incorrect" name="count-incorrect" value="<?php echo $typing_length - $quiz->Q_TYPING_CORRECT ?>" onchange="update_correct()">
-					<br>
-					<label for=count-correct>count - correct</label>
-					<!--	<span id="correct_word_display"><?php echo $quiz->Q_TYPING_CORRECT ?></span>
-				<input type="hidden" id="count-correct" name="count-correct" value="<?php echo $quiz->Q_TYPING_CORRECT ?>"> -->
-					<input type="hidden" id="wordlen" name="wordlen" value="<?php echo $typing_length ?>">
-					<input type="text" id="count-correct" name="count-correct" value="<?php echo $quiz->Q_TYPING_CORRECT ?>" readonly>
+					<label for=count-correct>count - total typed chars</label>
+					<input type="text" id="count-correct" name="count-correct" value="<?php echo $quiz->Q_TYPING_CHARS ?>" readonly>
 
 
 				</fieldset>
