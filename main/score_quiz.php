@@ -27,11 +27,15 @@ $duration = date_create($quiz->Q_DURATION);
 // check status to determine which buttons should be locked out
 $save_disable = "";
 $complete_disable = "";
+$essay_is_empty = trim((string)$quiz->Q_ESSAY) === "";
 if ($quiz->Q_GRADING_STATUS == "Completed") {
 	$save_disable = "disabled";
 	$complete_disable = "disabled";
 } else {
-	if ($quiz->Q_SCORING == "") $complete_disable = "disabled";
+	// Normally a scorer must mark up the essay (Q_SCORING) before completing.
+	// An empty essay has nothing to mark up, so allow completing it directly;
+	// it records an all-zero score.
+	if ($quiz->Q_SCORING == "" && !$essay_is_empty) $complete_disable = "disabled";
 }
 //echo implode(' ', $GLOBALS);
 //var_dump($GLOBALS);
@@ -56,7 +60,8 @@ if (is_null($quiz->Q_SCORING) != 1) {
 	<!-- Core theme CSS (includes Bootstrap)-->
 	<link href="../css/styles.css" rel="stylesheet" />
 	<link href="../css/score_style.css?v=3a" rel="stylesheet" />
-	<script type="text/javascript" src="../includes/scripts.js?v=4"></script>
+	<script type="text/javascript" src="../includes/ciws_score_calculator.js?v=1"></script>
+	<script type="text/javascript" src="../includes/scripts.js?v=7"></script>
 	<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
 	<style>
 		#footer {

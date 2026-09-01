@@ -1,0 +1,42 @@
+[
+  {
+    "name": "mixed symbols",
+    "counts": { "correct": 10, "inaccurate": 3, "overlap": 1, "nmae": 2, "word": 4 },
+    "expected": { "sentenceError": 4, "sentenceAccuracy": 0.714, "sentenceDenominator": 14, "ciws": 4 }
+  },
+  {
+    "name": "all zero",
+    "counts": { "correct": 0, "inaccurate": 0, "overlap": 0, "nmae": 0, "word": 0 },
+    "expected": { "sentenceError": 0, "sentenceAccuracy": 0, "sentenceDenominator": 0, "ciws": 0 }
+  },
+  {
+    "name": "teal only",
+    "counts": { "correct": 0, "inaccurate": 0, "overlap": 0, "nmae": 3, "word": 0 },
+    "expected": { "sentenceError": 0, "sentenceAccuracy": 0, "sentenceDenominator": 0, "ciws": 3 }
+  },
+  {
+    "name": "word only",
+    "counts": { "correct": 0, "inaccurate": 0, "overlap": 0, "nmae": 0, "word": 2 },
+    "expected": { "sentenceError": 0, "sentenceAccuracy": 0, "sentenceDenominator": 0, "ciws": -2 }
+  },
+  {
+    "name": "no sentence errors",
+    "counts": { "correct": 8, "inaccurate": 0, "overlap": 0, "nmae": 2, "word": 1 },
+    "expected": { "sentenceError": 0, "sentenceAccuracy": 1, "sentenceDenominator": 8, "ciws": 9 }
+  },
+  {
+    "name": "all sentence symbols are errors",
+    "counts": { "correct": 0, "inaccurate": 2, "overlap": 3, "nmae": 7, "word": 0 },
+    "expected": { "sentenceError": 5, "sentenceAccuracy": 0, "sentenceDenominator": 5, "ciws": 2 }
+  },
+  {
+    "name": "rounding to three decimals",
+    "counts": { "correct": 2, "inaccurate": 1, "overlap": 0, "nmae": 0, "word": 0 },
+    "expected": { "sentenceError": 1, "sentenceAccuracy": 0.667, "sentenceDenominator": 3, "ciws": 1 }
+  },
+  {
+    "name": "negative CIWS",
+    "counts": { "correct": 1, "inaccurate": 4, "overlap": 3, "nmae": 1, "word": 5 },
+    "expected": { "sentenceError": 7, "sentenceAccuracy": 0.125, "sentenceDenominator": 8, "ciws": -10 }
+  }
+]

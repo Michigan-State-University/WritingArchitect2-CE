@@ -368,7 +368,9 @@ function makeScoreBtns(scoreTypes, forFS) {
 
 function countInput() {
   const essayRaw = document.getElementById("essay-raw-in").value.trim();
-  const wordArr = essayRaw.match(/\w+/g);
+  // An empty essay has no word characters: match() returns null. Treat as 0
+  // words rather than dereferencing null (which crashed the scoring screen).
+  const wordArr = essayRaw.match(/\w+/g) || [];
   const countW = wordArr.length;
   const countS = essayRaw.split(/[!|.|?]+/).length - 1;
   const countWGTE7 = essayRaw.match(/\w{7,}/g)?.length || 0;
@@ -385,7 +387,6 @@ function countScores() {
   let yellow_s = 0;
   let teal_s = 0;
   let w_symbols = 0;
-  let s_symbols = 0;
   let correct_symbols = 0;
 
   // Loop through each button in the scoring area
@@ -403,30 +404,38 @@ function countScores() {
     // Check if button text contains Ⓦ, increment w_symbols by number of Ⓦ
     if (btn.innerHTML.includes("Ⓦ")) {
       w_symbols += btn.innerHTML.split("Ⓦ").length - 1;
-    } else if (btn.innerHTML.includes("Ⓢ")) { // Check if button text contains Ⓢ, increment s_symbols by number of Ⓢ
-      s_symbols += btn.innerHTML.split("Ⓢ").length - 1;
     } else if (btn.innerHTML === "^") { // Check if button text is ^, increment correct_symbols
       correct_symbols++;
     }
   }
 
-  const te = s_symbols + w_symbols;
-  const ts = te + correct_symbols;
-  // const ciws = cws - te; 
-  // New CIWS calculation: Total correct symbols (^) - Red S symbols (Ⓢ) - Total W symbols (Ⓦ)
-  const ciws = correct_symbols - red_s - w_symbols;
-  const wa = (1 - w_symbols / ts).toFixed(3);
-  // New Sentence Accuracy calculation: 1 – (red S Symbols + yellow s symbols) / Total Symbols (^, Ⓢ, Ⓦ)
-  const sa = (1 - (red_s + yellow_s) / ts).toFixed(3);
+  const ciwsScores = CIWSScoreCalculator.calculate({
+    correct: correct_symbols,
+    inaccurate: red_s,
+    overlap: yellow_s,
+    nmae: teal_s,
+    word: w_symbols,
+  });
+  // Word accuracy is errors relative to the number of words written, not to the
+  // total scoring symbols. Reuse the word count already shown in the UI (and
+  // saved as Q_WORD_COUNT) so the denominator can never drift from it.
+  const wordCount = parseInt(document.getElementById("essay-words").innerHTML, 10) || 0;
+  // When there are no words at all (an empty essay), accuracy is 0/0.
+  // Per scoring rules, report that as 0 rather than NaN.
+  const wa = wordCount === 0 ? (0).toFixed(3) : (1 - w_symbols / wordCount).toFixed(3);
+  // Sentence accuracy excludes both word flags and teal/NMAE symbols from its
+  // denominator: total symbols - W - teal = correct + inaccurate + overlap.
+  const sa = ciwsScores.sentenceAccuracy.toFixed(3);
   const sentences = essayRaw
     .split(/[.|?|!]+/)
     .filter((sent) => sent.length > 0);
   const sentLenArr = sentences.map((s) => s.trim().split(/\s/).length);
   const sComp = getStandardDeviation(sentLenArr);
   document.getElementById("sc-c").innerHTML = correct_symbols;
-  document.getElementById("sc-ciws").innerHTML = ciws;
+  document.getElementById("sc-ciws").innerHTML = ciwsScores.ciws;
   document.getElementById("sc-we").innerHTML = w_symbols;
-  document.getElementById("sc-se").innerHTML = s_symbols;
+  // Sentence Flag contains inaccurate (red) and overlap (yellow), never teal/NMAE.
+  document.getElementById("sc-se").innerHTML = ciwsScores.sentenceError;
   document.getElementById("sc-s-inacc").innerHTML = red_s;
   document.getElementById("sc-s-overlap").innerHTML = yellow_s;
   document.getElementById("sc-s-nmae").innerHTML = teal_s;
@@ -439,6 +448,9 @@ function countScores() {
 
 function getStandardDeviation(array) {
   const n = array.length;
+  // No sentences (an empty essay) means zero complexity, not a crash on the
+  // empty-array reduce below.
+  if (n === 0) return 0;
   const mean = array.reduce((a, b) => a + b) / n;
   return Math.sqrt(
     array.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n,

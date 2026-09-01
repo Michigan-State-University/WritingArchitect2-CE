@@ -67,31 +67,50 @@ $GLOBALS['page_title'] = "Quick Write";
 		}
 	</style>
 	<script language='javascript'>
-		function CountDown(duration, display) {
-			if (!isNaN(duration)) {
-				var timer = duration,
-					minutes, seconds;
+		var timerInterval = null;
 
-				var interVal = setInterval(function() {
-					minutes = parseInt(timer / 60, 10);
-					seconds = parseInt(timer % 60, 10);
+		function CountDown(remaining, display) {
+			if (!isNaN(remaining)) {
+				if (timerInterval) clearInterval(timerInterval);
 
-					//	minutes = minutes < 10 ? "0" + minutes : minutes;
+				timerInterval = setInterval(function() {
+					remaining--;
+					sessionStorage.setItem('quiz_<?php echo $qid ?>_remaining', remaining);
+
+					var minutes = parseInt(remaining / 60, 10);
+					var seconds = parseInt(remaining % 60, 10);
 					seconds = seconds < 10 ? "0" + seconds : seconds;
 					document.getElementById(display).innerHTML = minutes + ":" + seconds;
 
-					if (--timer < 0) {
-						timer = duration;
-						//SubmitFunction();
+					if (remaining <= 0) {
+						clearInterval(timerInterval);
+						sessionStorage.setItem('quiz_<?php echo $qid ?>_done', '1');
+						sessionStorage.removeItem('quiz_<?php echo $qid ?>_remaining');
 						document.getElementById('TIMER_DISPLAY').innerHTML = "";
-						clearInterval(interVal);
 						document.getElementById("TYPING").submit();
 					}
 				}, 1000);
 			}
 		}
 
-		CountDown(90, "TIMER_DISPLAY");
+		window.addEventListener('pageshow', function(event) {
+			// If timer already ran out, send them forward immediately
+			if (sessionStorage.getItem('quiz_<?php echo $qid ?>_done') === '1') {
+				window.location.replace("pup_quiz6.php?id=<?php echo $GLOBALS['SESSION_ID'] ?>");
+				return;
+			}
+
+			// Resume timer from saved remaining time, or start fresh
+			var saved = sessionStorage.getItem('quiz_<?php echo $qid ?>_remaining');
+			var startFrom = (saved !== null) ? parseInt(saved) : 90;
+			CountDown(startFrom, "TIMER_DISPLAY");
+
+			// Show current remaining time immediately (before first tick)
+			var minutes = parseInt(startFrom / 60, 10);
+			var seconds = parseInt(startFrom % 60, 10);
+			seconds = seconds < 10 ? "0" + seconds : seconds;
+			document.getElementById('TIMER_DISPLAY').innerHTML = minutes + ":" + seconds;
+		});
 
 		$(document).ready(function() {
 			$('#Q_TYPING').bind('cut copy paste', function(event) {
