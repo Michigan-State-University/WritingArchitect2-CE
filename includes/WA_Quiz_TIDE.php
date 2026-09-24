@@ -232,7 +232,9 @@ class QUIZ
 		$isfirstrow = true;
 		while ($row = $stmt->fetch()) {
 			$delete_link = '<a href="" onclick="delete_record(\'' . $row['Q_ID'] . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
-			$quiz_list .= "<tr><td>$delete_link</td><td>" . $row['USER_LAST_NAME'] . "</td><td>" . $row['USER_FIRST_NAME'] . "</td><td>" . $row['CLASS_NAME'] . "</td><td>" . $row['Q_PROMPT_TITLE'] . "</td></tr>";
+			$userLastName = htmlspecialchars((string) $row['USER_LAST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+			$userFirstName = htmlspecialchars((string) $row['USER_FIRST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+			$quiz_list .= "<tr><td>$delete_link</td><td>" . $userLastName . "</td><td>" . $userFirstName . "</td><td>" . $row['CLASS_NAME'] . "</td><td>" . $row['Q_PROMPT_TITLE'] . "</td></tr>";
 		}
 		$quiz_list .= "</table>";
 
@@ -262,7 +264,9 @@ class QUIZ
 			$isfirstrow = true;
 			while ($row = $stmt->fetch()) {
 				$edit_link = '<a href="score_quiz.php?sid=' . $row['Q_ID'] . '&id=' . $GLOBALS["SESSION_ID"] . '" target="scorequiz"><img src="../images/icn_grading.png"></a>';
-				$quiz_list .= "<tr><td align='center'>$edit_link</td><td>" . $row['Q_GRADING_STATUS'] . "</td><td>" . $row['USER_LAST_NAME'] . "</td><td>" . $row['USER_FIRST_NAME'] . "</td><td>" . $row['CLASS_NAME'] . "</td><td>" . $row['Q_PROMPT_TITLE'] . "</td></tr>";
+				$userLastName = htmlspecialchars((string) $row['USER_LAST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+				$userFirstName = htmlspecialchars((string) $row['USER_FIRST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+				$quiz_list .= "<tr><td align='center'>$edit_link</td><td>" . $row['Q_GRADING_STATUS'] . "</td><td>" . $userLastName . "</td><td>" . $userFirstName . "</td><td>" . $row['CLASS_NAME'] . "</td><td>" . $row['Q_PROMPT_TITLE'] . "</td></tr>";
 			}
 			$quiz_list .= "</table>";
 

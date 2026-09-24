@@ -62,7 +62,7 @@ CREATE TABLE `config_schools` (
 
 CREATE TABLE `config_users` (
   `USER_ID` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `USER_CODE` varchar(20) DEFAULT NULL,
+  `USER_CODE` varchar(20) NOT NULL,
   `USER_LEVEL` varchar(20) DEFAULT NULL,
   `USER_STATUS` varchar(10) DEFAULT NULL,
   `USER_ORGANIZATION` varchar(80) DEFAULT NULL,
@@ -76,7 +76,8 @@ CREATE TABLE `config_users` (
   `USER_CREATED_BY` varchar(20) DEFAULT NULL,
   `USER_MODIFIED_ON` datetime DEFAULT NULL,
   `USER_MODIFIED_BY` varchar(20) DEFAULT NULL,
-  `USER_SALT` TEXT DEFAULT NULL
+  `USER_SALT` TEXT DEFAULT NULL,
+  CONSTRAINT `uq_config_users_user_code` UNIQUE (`USER_CODE`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb3 COLLATE = utf8mb3_unicode_ci;
 
 CREATE TABLE `man_sessions` (

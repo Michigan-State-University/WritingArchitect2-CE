@@ -31,8 +31,8 @@ if ($GLOBALS['USER_LEVEL'] != "ADMIN") die("Access denied.");
 	<link href="../css/WA.css" rel="stylesheet" />
 	<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
 	<script language="javascript">
-		function delete_record(user_code) {
-			var msg_str = "Delete user " + user_code + "?";
+		function delete_record(user_id) {
+			var msg_str = "Delete selected user (account ID " + user_id + ")?";
 			if (confirm(msg_str)) {
 				// Get ?id from query string
 				let sessionID = new URLSearchParams(window.location.search).get("id");
@@ -42,7 +42,7 @@ if ($GLOBALS['USER_LEVEL'] != "ADMIN") die("Access denied.");
 					type: "POST",
 					data: ({
 						TYPE: 'user',
-						VALUE: user_code
+						VALUE: user_id
 					}),
 					success: function(data) {
 						location.reload();

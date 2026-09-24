@@ -103,9 +103,16 @@ class Account
 		$stmt->bindValue(':acct_id', $acct_id, PDO::PARAM_INT);
 		$stmt->bindValue(':suc', $SQL_USER_CODE, PDO::PARAM_STR);
 		$stmt->execute();
-		if ($stmt->rowCount() > 0) {
+		if ($stmt->fetch()) {
 			return "NOT UNIQUE";
-		} else {
+		}
+
+		$ownsTransaction = method_exists($db, 'inTransaction') && !$db->inTransaction();
+		if ($ownsTransaction) {
+			$db->beginTransaction();
+		}
+
+		try {
 			$ret_value = "";
 			if ($acct_id == "0") {
 				$createdtext = ", USER_CREATED_BY=:guc, USER_CREATED_AT=UTC_TIMESTAMP()";
@@ -125,21 +132,15 @@ class Account
 					$stmt->bindValue(':pbkdf2_pass', $pbkdf2_hash, PDO::PARAM_STR);
 					$stmt->bindValue(':pbkdf2_salt', $salt, PDO::PARAM_STR);
 				}
-				if ($stmt->execute()) {
-					$query = "SELECT USER_ID from config_users where USER_CODE=:tuc";
-					$stmt = $db->prepare($query);
-					$stmt->bindValue(':tuc', $this->USER_CODE, PDO::PARAM_STR);
-					$stmt->execute();
-					if ($stmt->rowCount() > 0) {
-						$row = $stmt->fetch();
-						$this->USER_ID = $row['USER_ID'];
-						$acct_id = $this->USER_ID;
-						$ret_value = $row['USER_ID'];
-					}
+				$stmt->execute();
+				$this->USER_ID = (int) $db->lastInsertId();
+				if ($this->USER_ID <= 0) {
+					throw new RuntimeException('The inserted account did not return a USER_ID.');
 				}
+				$acct_id = $this->USER_ID;
+				$ret_value = $this->USER_ID;
 			} else {
 				$query = "UPDATE config_users SET " . $dataval . " WHERE USER_ID=:acct_id";
-
 				$stmt = $db->prepare($query);
 				$stmt->bindValue(':suc', $SQL_USER_CODE, PDO::PARAM_STR);
 				$stmt->bindValue(':userlevel', $userlevel, PDO::PARAM_STR);
@@ -158,42 +159,49 @@ class Account
 				$stmt->bindValue(':acct_id', $acct_id, PDO::PARAM_INT);
 				$stmt->execute();
 			}
-			//save class if student
+
+			// Save class membership as part of the same transaction as the account.
 			if ($userlevel == "STUDENT" && ($GLOBALS['USER_LEVEL'] == 'ADMIN' || $GLOBALS['USER_LEVEL'] == 'SCORER' || $GLOBALS['USER_LEVEL'] == 'TEACHER')) {
 				$query = "SELECT PUPIL_ID from config_pupils where PUPIL_STUDENTID=:acct_id";
 				$stmt = $db->prepare($query);
 				$stmt->bindValue(':acct_id', $acct_id, PDO::PARAM_INT);
 				$stmt->execute();
-				if ($stmt->rowCount() > 0) {
-					$row = $stmt->fetch();
-					$pupilid = $row['PUPIL_ID'];
-				} else {
-					$pupilid = "0";
-				}
-				$dataval = "PUPIL_CLASSID=:tuser_cid,
-					PUPIL_STUDENTID=:acct_id, 
+				$row = $stmt->fetch();
+				$pupilid = $row ? $row['PUPIL_ID'] : "0";
+
+				$pupilData = "PUPIL_CLASSID=:tuser_cid,
+					PUPIL_STUDENTID=:acct_id,
 					PUPIL_MODIFIED_BY=:guc,
 					PUPIL_MODIFIED_ON=UTC_TIMESTAMP()";
-
 				if ($pupilid == "0") {
-					$createdtext = ", PUPIL_CREATED_BY=:guc, PUPIL_CREATED_AT=UTC_TIMESTAMP()";
-					$query = "INSERT into config_pupils set " . $dataval . $createdtext;
-					$stmt = $db->prepare($query);
-					$stmt->bindValue(':tuser_cid', $this->USER_CLASSID, PDO::PARAM_INT);
-					$stmt->bindValue(':acct_id', $acct_id, PDO::PARAM_INT);
-					$stmt->bindValue(':guc', $GLOBALS['USER_CODE'], PDO::PARAM_STR);
-					$stmt->execute();
+					$query = "INSERT into config_pupils set " . $pupilData .
+						", PUPIL_CREATED_BY=:guc, PUPIL_CREATED_AT=UTC_TIMESTAMP()";
 				} else {
-					$query = "UPDATE config_pupils SET " . $dataval . " WHERE PUPIL_ID=:pupilid";
-					$stmt = $db->prepare($query);
-					$stmt->bindValue(':tuser_cid', $this->USER_CLASSID, PDO::PARAM_INT);
-					$stmt->bindValue(':acct_id', $acct_id, PDO::PARAM_INT);
-					$stmt->bindValue(':guc', $GLOBALS['USER_CODE'], PDO::PARAM_STR);
-					$stmt->bindValue(':pupilid', $pupilid, PDO::PARAM_INT);
-					$stmt->execute();
+					$query = "UPDATE config_pupils SET " . $pupilData . " WHERE PUPIL_ID=:pupilid";
 				}
+				$stmt = $db->prepare($query);
+				$stmt->bindValue(':tuser_cid', $this->USER_CLASSID, PDO::PARAM_INT);
+				$stmt->bindValue(':acct_id', $acct_id, PDO::PARAM_INT);
+				$stmt->bindValue(':guc', $GLOBALS['USER_CODE'], PDO::PARAM_STR);
+				if ($pupilid != "0") {
+					$stmt->bindValue(':pupilid', $pupilid, PDO::PARAM_INT);
+				}
+				$stmt->execute();
+			}
+
+			if ($ownsTransaction) {
+				$db->commit();
 			}
 			return $ret_value;
+		} catch (Throwable $exception) {
+			if ($ownsTransaction && $db->inTransaction()) {
+				$db->rollBack();
+			}
+			if ($exception instanceof PDOException && $exception->getCode() === '23000' &&
+				strpos($exception->getMessage(), '1062') !== false) {
+				return "NOT UNIQUE";
+			}
+			throw $exception;
 		}
 	}
 
@@ -204,8 +212,9 @@ class Account
 		$stmt = $db->prepare($query);
 		$stmt->bindValue(':acct_id', $acct_id, PDO::PARAM_INT);
 		$stmt->execute();
-		if ($stmt->rowCount() > 0) {
-			$row = $stmt->fetch();
+		$row = $stmt->fetch();
+		if ($row) {
+			$this->USER_ID = $row['USER_ID'];
 			$this->USER_CODE = $row['USER_CODE'];
 			$this->USER_LEVEL = $row['USER_LEVEL'];
 			$this->USER_STATUS = $row['USER_STATUS'];
@@ -238,8 +247,8 @@ class Account
 		$stmt = $db->prepare($query);
 		$stmt->bindValue(':uc', $this->USER_CODE, PDO::PARAM_STR);
 		$stmt->execute();
-		if ($stmt->rowCount() > 0) {
-			$row = $stmt->fetch();
+		$row = $stmt->fetch();
+		if ($row) {
 			$this->USER_ID = $row['USER_ID'];
 			$this->USER_CODE = $row['USER_CODE'];
 			$this->USER_LEVEL = $row['USER_LEVEL'];
@@ -266,6 +275,64 @@ class Account
 			return false;
 		}
 	}
+
+	public function delete_account($db, $user_id)
+	{
+		if (filter_var($user_id, FILTER_VALIDATE_INT) === false || (int) $user_id <= 0) {
+			throw new InvalidArgumentException('A valid USER_ID is required.');
+		}
+
+		$ownsTransaction = method_exists($db, 'inTransaction') && !$db->inTransaction();
+		if ($ownsTransaction) {
+			$db->beginTransaction();
+		}
+
+		try {
+			$query = "SELECT USER_CODE FROM config_users WHERE USER_ID=:acct_id FOR UPDATE";
+			$stmt = $db->prepare($query);
+			$stmt->bindValue(':acct_id', (int) $user_id, PDO::PARAM_INT);
+			$stmt->execute();
+			$row = $stmt->fetch();
+			if (!$row) {
+				if ($ownsTransaction) {
+					$db->commit();
+				}
+				return 0;
+			}
+
+			$query = "UPDATE man_sessions
+				SET session_end_time=UTC_TIMESTAMP()
+				WHERE session_userid=:user_code AND session_end_time IS NULL";
+			$stmt = $db->prepare($query);
+			$stmt->bindValue(':user_code', $row['USER_CODE'], PDO::PARAM_STR);
+			$stmt->execute();
+
+			$query = "DELETE FROM config_pupils WHERE PUPIL_STUDENTID=:acct_id";
+			$stmt = $db->prepare($query);
+			$stmt->bindValue(':acct_id', (int) $user_id, PDO::PARAM_INT);
+			$stmt->execute();
+
+			$query = "DELETE FROM config_users WHERE USER_ID=:acct_id";
+			$stmt = $db->prepare($query);
+			$stmt->bindValue(':acct_id', (int) $user_id, PDO::PARAM_INT);
+			$stmt->execute();
+			$deleted = $stmt->rowCount();
+
+			if ($ownsTransaction) {
+				$db->commit();
+			}
+			return $deleted;
+		} catch (Throwable $exception) {
+			if ($ownsTransaction && $db->inTransaction()) {
+				$db->rollBack();
+			}
+			throw $exception;
+		}
+	}
+}
+function account_html($value)
+{
+	return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
 // CREATE Session
@@ -328,10 +395,10 @@ function list_admins($db)
 	}
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {
-		$USER_ID = $row['USER_ID'];
-		$delete_link = '<a href="" onclick="delete_record(\'' . $row['USER_CODE'] . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
+		$USER_ID = (int) $row['USER_ID'];
+		$delete_link = '<a href="" onclick="delete_record(\'' . $USER_ID . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
 		$edit_link = '<a href="edit_user.php?USER_LEVEL=ADMIN&uid=' . $USER_ID . '&id=' . $GLOBALS["SESSION_ID"] . '"><img src="../images/icn_edit.png"></a>';
-		$admin_list .= "<tr><td align='center'>$edit_link $delete_link</td><td class='table_row'>" . $row['USER_CODE'] . "</td><td class='table_row'>" . $row['USER_LAST_NAME'] . "</td><td class='table_row'>" . $row['USER_FIRST_NAME'] . "</td><td class='table_row'>" . $row['USER_ORGANIZATION'] . "</td><td class='table_row'>" . $row['USER_STATUS'] . "</td></tr>";
+		$admin_list .= "<tr><td align='center'>$edit_link $delete_link</td><td class='table_row'>" . account_html($row['USER_CODE']) . "</td><td class='table_row'>" . account_html($row['USER_LAST_NAME']) . "</td><td class='table_row'>" . account_html($row['USER_FIRST_NAME']) . "</td><td class='table_row'>" . account_html($row['USER_ORGANIZATION']) . "</td><td class='table_row'>" . account_html($row['USER_STATUS']) . "</td></tr>";
 	}
 	$admin_list .= "</table>";
 	return $admin_list;
@@ -362,11 +429,11 @@ function list_teachers($db)
 	}
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {
-		$USER_ID = $row['USER_ID'];
+		$USER_ID = (int) $row['USER_ID'];
 		if ($GLOBALS['USER_LEVEL'] == "TEACHER") $delete_link = "";
-		else $delete_link = '<a href="" onclick="delete_record(\'' . $row['USER_CODE'] . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
+		else $delete_link = '<a href="" onclick="delete_record(\'' . $USER_ID . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
 		$edit_link = '<a href="edit_user.php?USER_LEVEL=TEACHER&uid=' . $USER_ID . '&id=' . $GLOBALS["SESSION_ID"] . '"><img src="../images/icn_edit.png"></a>';
-		$teacher_list .= "<tr><td align='center'>$edit_link $delete_link</td><td class='table_row'>" . $row['USER_CODE'] . "</td><td class='table_row'>" . $row['USER_LAST_NAME'] . "</td><td class='table_row'>" . $row['USER_FIRST_NAME'] . "</td><td class='table_row'>" . $row['USER_ORGANIZATION'] . "</td><td class='table_row'>" . $row['USER_STATUS'] . "</td></tr>";
+		$teacher_list .= "<tr><td align='center'>$edit_link $delete_link</td><td class='table_row'>" . account_html($row['USER_CODE']) . "</td><td class='table_row'>" . account_html($row['USER_LAST_NAME']) . "</td><td class='table_row'>" . account_html($row['USER_FIRST_NAME']) . "</td><td class='table_row'>" . account_html($row['USER_ORGANIZATION']) . "</td><td class='table_row'>" . account_html($row['USER_STATUS']) . "</td></tr>";
 	}
 	$teacher_list .= "</table>";
 	return $teacher_list;
@@ -388,10 +455,10 @@ function list_scorers($db)
 	}
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {
-		$USER_ID = $row['USER_ID'];
-		$delete_link = '<a href="" onclick="delete_record(\'' . $row['USER_CODE'] . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
+		$USER_ID = (int) $row['USER_ID'];
+		$delete_link = '<a href="" onclick="delete_record(\'' . $USER_ID . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
 		$edit_link = '<a href="edit_user.php?USER_LEVEL=SCORER&uid=' . $USER_ID . '&id=' . $GLOBALS["SESSION_ID"] . '"><img src="../images/icn_edit.png"></a>';
-		$scorer_list .= "<tr><td align='center'>$edit_link $delete_link</td><td class='table_row'>" . $row['USER_CODE'] . "</td><td class='table_row'>" . $row['USER_LAST_NAME'] . "</td><td class='table_row'>" . $row['USER_FIRST_NAME'] . "</td><td class='table_row'>" . $row['USER_ORGANIZATION'] . "</td><td class='table_row'>" . $row['USER_STATUS'] . "</td></tr>";
+		$scorer_list .= "<tr><td align='center'>$edit_link $delete_link</td><td class='table_row'>" . account_html($row['USER_CODE']) . "</td><td class='table_row'>" . account_html($row['USER_LAST_NAME']) . "</td><td class='table_row'>" . account_html($row['USER_FIRST_NAME']) . "</td><td class='table_row'>" . account_html($row['USER_ORGANIZATION']) . "</td><td class='table_row'>" . account_html($row['USER_STATUS']) . "</td></tr>";
 	}
 	$scorer_list .= "</table>";
 	return $scorer_list;
@@ -418,10 +485,10 @@ function list_students($db, $org)
 	}
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {
-		$USER_ID = $row['USER_ID'];
-		$delete_link = '<a href="" onclick="delete_record(\'' . $row['USER_CODE'] . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
+		$USER_ID = (int) $row['USER_ID'];
+		$delete_link = '<a href="" onclick="delete_record(\'' . $USER_ID . '\');return false;"><img src="../images/icn_delete.png" height="16" width="16"></a>';
 		$edit_link = '<a href="edit_user.php?USER_LEVEL=STUDENT&uid=' . $USER_ID . '&id=' . $GLOBALS["SESSION_ID"] . '"><img src="../images/icn_edit.png"></a>';
-		$student_list .= "<tr><td align='center'>$edit_link $delete_link</td><td class='table_row'>" . $row['USER_CODE'] . "</td><td class='table_row'>" . $row['USER_LAST_NAME'] . "</td><td class='table_row'>" . $row['USER_FIRST_NAME'] . "</td><td class='table_row'>" . $row['USER_ORGANIZATION'] . "</td><td class='table_row'>" . get_current_class($db, $row['USER_ID']) . "</td><td class='table_row'>" . $row['USER_STATUS'] . "</td></tr>";
+		$student_list .= "<tr><td align='center'>$edit_link $delete_link</td><td class='table_row'>" . account_html($row['USER_CODE']) . "</td><td class='table_row'>" . account_html($row['USER_LAST_NAME']) . "</td><td class='table_row'>" . account_html($row['USER_FIRST_NAME']) . "</td><td class='table_row'>" . account_html($row['USER_ORGANIZATION']) . "</td><td class='table_row'>" . account_html(get_current_class($db, $row['USER_ID'])) . "</td><td class='table_row'>" . account_html($row['USER_STATUS']) . "</td></tr>";
 	}
 	$student_list .= "</table>";
 	return $student_list;

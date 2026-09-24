@@ -31,41 +31,36 @@ $value = $_POST['VALUE'];
 
 switch ($_POST['TYPE']) {
 	case 'user':
+		if (filter_var($value, FILTER_VALIDATE_INT) === false || (int) $value <= 0) {
+			die("Error: Invalid USER_ID");
+		}
 		$targetAccount = new Account($db);
-		# find the user by user_code
-		$targetAccount->USER_CODE = $value;
-		$targetAccount->loadAccountByUserCode($db);
+		if (!$targetAccount->load_account($db, (int) $value)) {
+			die("Error: User not found");
+		}
 		if ($GLOBALS['USER_LEVEL'] == "ADMIN") {
-			$tableName = "config_users";
-			$column = "user_code";
-			break;
+			// Administrators may delete any account, preserving existing behavior.
 		} elseif ($GLOBALS['USER_LEVEL'] == "SCORER") {
 			// Check if $targetAccount->ORGANIATION is the same as the current user's organization
 			if ($GLOBALS['USER_ORGANIZATION'] != $targetAccount->USER_ORGANIZATION) die("Access denied.");
 			// Check if the targetAccount->USER_LEVEL is lower
 			if ($targetAccount->USER_LEVEL == "SCORER" || $targetAccount->USER_LEVEL == "TEACHER" || $targetAccount->USER_LEVEL == "STUDENT") {
-				$tableName = "config_users";
-				$column = "user_code";
-				break;
 			} else {
 				die("Access denied.");
-				break;
 			}
 		} elseif ($GLOBALS['USER_LEVEL'] == "TEACHER") {
 			// Check if $targetAccount->ORGANIATION is the same as the current user's organization
 			if ($GLOBALS['USER_ORGANIZATION'] != $targetAccount->USER_ORGANIZATION) die("Access denied.");
 			// Check if $targetAccount->USER_LEVEL is lower
 			if ($targetAccount->USER_LEVEL == "STUDENT") {
-				$tableName = "config_users";
-				$column = "user_code";
-				break;
 			} else {
 				die("Access denied.");
-				break;
 			}
 		} else {
 			die("Access denied.");
 		}
+		$targetAccount->delete_account($db, $value);
+		exit;
 	case 'school':
 		if ($GLOBALS['USER_LEVEL'] != "ADMIN") die("Access denied.");
 		$tableName = "config_schools";

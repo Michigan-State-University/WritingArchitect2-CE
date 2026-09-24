@@ -4,6 +4,8 @@ include_once '../includes/Database.php';
 include_once '../includes/WA_Accounts.php';
 include_once '../includes/WA_Security.php';
 include_once '../includes/WA_Functions.php';
+include_once '../includes/StudentBatchImport.php';
+include_once '../includes/Spreadsheet.php';
 ini_set('display_errors', '1'); // DEVELOPMENT ONLY
 
 //get incoming values
@@ -12,13 +14,29 @@ $db = $database->connect();
 
 function get_all_classes($db) {
     $sql = "SELECT CLASS_ID, CLASS_NAME 
-            FROM config_classes 
+            FROM config_classes
+            WHERE CLASS_SCHOOL_ID=:school_id
             ORDER BY CLASS_ID ASC";
 
     $stmt = $db->prepare($sql);
+    $stmt->bindValue(':school_id', $GLOBALS['USER_SCHOOL_SN'], PDO::PARAM_STR);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function student_batch_result_row(array $data, string $status): array {
+    $row = [
+        $data['USER_CODE'],
+        $data['USER_STATUS'],
+        $data['USER_FIRST_NAME'],
+        $data['USER_LAST_NAME'],
+        $data['USER_EMAIL'],
+        $data['USER_CLASSID'],
+        $status,
+    ];
+
+    return spreadsheet_safe_row($row);
 }
 
 $secure_access = check_security($db);
@@ -26,125 +44,81 @@ $secure_access = check_security($db);
 $U_LEVEL = isset($_REQUEST['USER_LEVEL']) ? $_REQUEST['USER_LEVEL'] : die();
 $uid = isset($_REQUEST['uid']) ? $_REQUEST['uid'] : die();
 $mode = isset($_POST['mode']) ? $_POST['mode'] : "";
+$cntl_message = "";
+$result = "";
 
 if ($mode == 'UPLOAD_CSV') {
     if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] == UPLOAD_ERR_OK) {
         $tmpName = $_FILES['csv_file']['tmp_name'];
+        $header = [
+            'USER_CODE',
+            'USER_STATUS',
+            'USER_FIRST_NAME',
+            'USER_LAST_NAME',
+            'USER_EMAIL',
+            'USER_CLASSID',
+        ];
 
-        // Fix deprecation warning
-        $rows = array_map(function($line) {
-            return str_getcsv($line, ",", '"', "\\"); 
-        }, file($tmpName));
-
-		$rowCount = count($rows);
-
-		// Check that row amount is reasonable/bellow maximum
-		$maxRows = 5000;
-		if ($rowCount > $maxRows) {
-			$cntl_message = "Too many rows: Please upload <= 5000 new accounts at a time. Bulk user accounts not saved.";
-			error_log("CSV upload rejected: too many rows ($rowCount > $maxRows)");
-			return;
-		}
-
-        $header = array_map('trim', array_shift($rows)); // first row = headers
-
-		// Required headers
-		$requiredHeaders = [
-			'USER_CODE',
-			'USER_STATUS',
-			'USER_FIRST_NAME',
-			'USER_LAST_NAME',
-			'USER_EMAIL',
-			'USER_PASSWORD',
-			'USER_CLASSID'
-		];
-
-		// Check for missing headers
-		$missing = array_diff($requiredHeaders, $header);
-		if (!empty($missing)) {
-			$cntl_message = "Not all headers present- Please make sure you have columns: <br> USER_CODE, USER_STATUS, USER_FIRST_NAME, USER_LAST_NAME, USER_EMAIL, USER_PASSWORD, USER_CLASSID. <br> Bulk user accounts not saved.";
-			error_log("CSV upload rejected: missing headers: " . implode(', ', $missing));
-			return;
-		}
-
-        $output = [];
-        $output[] = array_merge($header, ['STATUS']);
-
-        $U_LEVEL = "STUDENT";   // force upload type to student
-
-        foreach ($rows as $row) {
-            $data = array_combine($header, $row);
-
-            $acct = new Account($db);
-            $acct->USER_CODE         = $data['USER_CODE'] ?? '';
-            $acct->USER_STATUS       = $data['USER_STATUS'] ?? '';
-            $acct->USER_FIRST_NAME   = $data['USER_FIRST_NAME'] ?? '';
-            $acct->USER_LAST_NAME    = $data['USER_LAST_NAME'] ?? '';
-            $acct->USER_ORGANIZATION = $GLOBALS['USER_ORGANIZATION'];
-            $acct->USER_EMAIL        = $data['USER_EMAIL'] ?? '';
-            $acct->USER_PASSWORD     = $data['USER_PASSWORD'] ?? '';
-            $acct->USER_CLASSID      = $data['USER_CLASSID'] ?? '';  
-
-            $rowResult = "";
-            $status    = "";
-
-            switch ($GLOBALS['USER_LEVEL']) {
-                case 'ADMIN':
-                    $rowResult = $acct->save_account($db, "0", $U_LEVEL);
-                    break;
-                case 'TEACHER':
-					$rowResult = $acct->save_account($db, "0", $U_LEVEL);
-                    break;
-                case 'SCORER':
-					$rowResult = $acct->save_account($db, "0", $U_LEVEL);
-                    break;
-                default:
-                    $rowResult = "DENIED";
-                    break;
-            }
-
-            if ($rowResult != "") {
-                switch ($rowResult) {
-                    case "NOT UNIQUE":
-                        $status = "DUPLICATE";
-                        break;
-                    case "DENIED":
-                        $status = "DENIED";
-                        break;
-                    default:
-                        $status = "SUCCESS";
-                        break;
+        try {
+            // Parse and validate the complete file before opening a transaction.
+            $rows = StudentBatchImport::parseCsvFile($tmpName);
+            $allowedClassIds = array_map(
+                'strval',
+                array_column(get_all_classes($db), 'CLASS_ID')
+            );
+            foreach ($rows as $index => $data) {
+                if (!in_array((string) $data['USER_CLASSID'], $allowedClassIds, true)) {
+                    $csvRow = $index + 2;
+                    throw new InvalidArgumentException(
+                        "CSV row {$csvRow} has a USER_CLASSID outside your school."
+                    );
                 }
-            } else {
-                $status = "ERROR";
+            }
+            $output = [array_merge($header, ['STATUS'])];
+            $safeRequestBudgetSeconds = 180;
+            @set_time_limit(220);
+
+            try {
+                $statuses = StudentBatchImport::importRows(
+                    $db,
+                    $rows,
+                    $GLOBALS['USER_ORGANIZATION'],
+                    $GLOBALS['USER_LEVEL'],
+                    $safeRequestBudgetSeconds
+                );
+            } catch (Throwable $exception) {
+                $failureStatus = strpos($exception->getMessage(), 'unique USER_CODE migration') !== false
+                    ? 'BLOCKED_MIGRATION'
+                    : 'ROLLED_BACK';
+                $statuses = array_fill(0, count($rows), $failureStatus);
+                error_log('Student CSV upload rolled back: ' . get_class($exception));
+            }
+            foreach ($rows as $index => $data) {
+                $output[] = student_batch_result_row($data, $statuses[$index]);
             }
 
-            $output[] = array_merge($row, [$status]);
+            // Return one result row per parsed input row.
+            if (ob_get_length()) {
+                ob_end_clean();
+            }
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="upload_results.csv"');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+            ini_set('display_errors', '0');
+            ini_set('log_errors', '1');
+            error_reporting(E_ALL);
+
+            $out = fopen('php://output', 'w');
+            foreach ($output as $line) {
+                fputcsv($out, $line, ",", '"', "\\");
+            }
+            fclose($out);
+            exit;
+        } catch (InvalidArgumentException $exception) {
+            $cntl_message = htmlspecialchars($exception->getMessage(), ENT_QUOTES, 'UTF-8') .
+                ' No student accounts were saved.';
         }
-
-        // send CSV back with result values next to student info
-        if (ob_get_length()) {
-            ob_end_clean();
-        }
-
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="upload_results.csv"');
-        header('Pragma: no-cache');
-        header('Expires: 0');
-
-        ini_set('display_errors', '0');
-        ini_set('log_errors', '1');
-        error_reporting(E_ALL);
-
-        $out = fopen('php://output', 'w');
-        foreach ($output as $line) {
-            fputcsv($out, $line, ",", '"', "\\");
-        }
-        fclose($out);
-
-		$cntl_message = "Bulk user accounts saved: Check output for individual account creation results.";
-
-        exit;
     }
 }
 
@@ -162,8 +136,6 @@ $ed_acct->USER_PASSWORD = isset($_POST['USER_PASSWORD']) ? $_POST['USER_PASSWORD
 //$ed_acct->USER_AUTHORITY = isset($_POST['USER_AUTHORITY']) ? $_POST['USER_AUTHORITY'] : "";
 $ed_acct->USER_CLASSID = isset($_POST['USER_CLASSID']) ? $_POST['USER_CLASSID'] : "";
 
-$cntl_message = "";
-$result = "";
 if ($mode == 'SAVE') {
 	switch ($GLOBALS['USER_LEVEL']) {
 		case 'ADMIN':
@@ -311,15 +283,15 @@ switch ($U_LEVEL) {
 					<table border="0" cellspacing="4" cellpadding="2">
 						<tr>
 							<td class="EditTitle"><label for="USER_CODE">User ID:</label></td>
-							<td><input id="USER_CODE" class="form-control" type="text" name="USER_CODE" maxlength="20" value="<?php echo $ed_acct->USER_CODE; ?>" width="20" required></td>
+							<td><input id="USER_CODE" class="form-control" type="text" name="USER_CODE" maxlength="20" value="<?php echo account_html($ed_acct->USER_CODE); ?>" width="20" required></td>
 							<td class="EditTitle"><label for="STATUS">Status:</label></td>
 							<td><?php create_drop_menu($db, "STATUS", $ed_acct->USER_STATUS, "USER_STATUS"); ?></td>
 						</tr>
 						<tr>
 							<td class="EditTitle"><label for="USER_FIRST_NAME">First Name:</label></td>
-							<td><input id="USER_FIRST_NAME" value="<?php echo $ed_acct->USER_FIRST_NAME; ?>" class="form-control" type="text" name="USER_FIRST_NAME" maxlength="50" required></td>
+							<td><input id="USER_FIRST_NAME" value="<?php echo account_html($ed_acct->USER_FIRST_NAME); ?>" class="form-control" type="text" name="USER_FIRST_NAME" maxlength="50" required></td>
 							<td class="EditTitle"><label for="USER_LAST_NAME">Last Name:</label></td>
-							<td><input id="USER_LAST_NAME" value="<?php echo $ed_acct->USER_LAST_NAME; ?>" class="form-control" type="text" name="USER_LAST_NAME" maxlength="50" required></td>
+							<td><input id="USER_LAST_NAME" value="<?php echo account_html($ed_acct->USER_LAST_NAME); ?>" class="form-control" type="text" name="USER_LAST_NAME" maxlength="50" required></td>
 						</tr>
 						<?php if (($GLOBALS['USER_LEVEL'] == 'ADMIN' || $GLOBALS['USER_LEVEL'] == 'SCORER' || $GLOBALS['USER_LEVEL'] == 'TEACHER') && $U_LEVEL == 'STUDENT') {
 							// This handles class menu for the student
@@ -350,14 +322,14 @@ switch ($U_LEVEL) {
 
 						<tr>
 							<td class="EditTitle"><label for="USER_EMAIL">Email:</label></td>
-							<td colspan="3"><input id="USER_EMAIL" value="<?php echo $ed_acct->USER_EMAIL; ?>" class="form-control" type="email" name="USER_EMAIL" maxlength="100" data-parsley-trigger="change" required></td>
+							<td colspan="3"><input id="USER_EMAIL" value="<?php echo account_html($ed_acct->USER_EMAIL); ?>" class="form-control" type="email" name="USER_EMAIL" maxlength="100" data-parsley-trigger="change" required></td>
 						</tr>
 						<tr>
 							<td class="EditTitle"><label for="USER_PASSWORD">Password:</label></td>
-							<td><input id="USER_PASSWORD" value="<?php echo $ed_acct->USER_PASSWORD; ?>" class="form-control" type="text" name="USER_PASSWORD" maxlength="16"></td>
+							<td><input id="USER_PASSWORD" value="<?php echo account_html($ed_acct->USER_PASSWORD); ?>" class="form-control" type="text" name="USER_PASSWORD" maxlength="16"></td>
 							<?php if ($U_LEVEL == "STUDENT HIDDEN") { ?>
 								<td class="EditTitle"><label for="USER_AUTHORITY">Job Authority:</label></td>
-								<td><input id="USER_AUTHORITY" value="<?php echo $ed_acct->USER_AUTHORITY; ?>" class="form-control" type="text" name="USER_AUTHORITY" maxlength="100"></td>
+								<td><input id="USER_AUTHORITY" value="<?php echo account_html($ed_acct->USER_AUTHORITY); ?>" class="form-control" type="text" name="USER_AUTHORITY" maxlength="100"></td>
 							<?php  } else { ?>
 								<td colspan="2" class="warning_text">Enter password ONLY if you are <br>intending to set or reset the password.</td>
 							<?php } ?>
@@ -386,7 +358,7 @@ switch ($U_LEVEL) {
 						<input type="file" name="csv_file" accept=".csv" required>
 						<input type="submit" class="waButtonSmall" value="Upload CSV">
 					</form>
-					<p><small>CSV must include columns: USER_CODE, USER_STATUS, USER_FIRST_NAME, USER_LAST_NAME, USER_EMAIL, USER_PASSWORD, USER_CLASSID.</small></p>
+					<p><small>CSV must include columns: USER_CODE, USER_STATUS, USER_FIRST_NAME, USER_LAST_NAME, USER_EMAIL, USER_PASSWORD, USER_CLASSID. Upload at most 75 students (2 MB) at a time.</small></p>
 
 					<p><b>NOTE: </b>You must use the class ID for input into the system, see the below section to find the ID of your class.</p>
 					<hr><br>

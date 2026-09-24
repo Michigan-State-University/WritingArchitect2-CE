@@ -84,7 +84,6 @@ class School_Class
 	}
 }
 
-
 // list classes
 function list_classes($db)
 {
@@ -108,7 +107,7 @@ function list_classes($db)
 		$delete_link = '<a title="DELETE CLASS" href="" onclick="delete_record(\'' . $row['CLASS_NAME'] . '\',' . $CLASS_ID . ' );return false;"><img src="../images/icn_delete16.png" height="16" width="16"></a>';
 		$roster_link = '<a title="SHOW CLASS ROSTER" href="sch_roster.php?cid=' . $CLASS_ID . '&id=' . $GLOBALS["SESSION_ID"] . '"><img src="../images/icn_roster16.png" height="16" width="16"></a>';
 		$edit_link = '<a title="EDIT CLASS" href="edit_class.php?cid=' . $CLASS_ID . '&id=' . $GLOBALS["SESSION_ID"] . '"><img src="../images/icn_edit.png"></a>';
-		$class_list .= "<tr><td align='center'>$edit_link $delete_link $roster_link</td><td class='table_row'>" . $row['CLASS_NAME'] . "</td><td class='table_row'>" . $row['CLASS_GRADE'] . "</td><td class='table_row'>" . $row['USER_LAST_NAME'] . ", " . $row['USER_FIRST_NAME'] . "</td></tr>";
+		$class_list .= "<tr><td align='center'>$edit_link $delete_link $roster_link</td><td class='table_row'>" . htmlspecialchars((string) $row['CLASS_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</td><td class='table_row'>" . htmlspecialchars((string) $row['CLASS_GRADE'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</td><td class='table_row'>" . htmlspecialchars((string) $row['USER_LAST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ", " . htmlspecialchars((string) $row['USER_FIRST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</td></tr>";
 	}
 	$class_list .= "</table>";
 	return $class_list;
@@ -135,7 +134,7 @@ function classes_menu($db, $ITEM_VAL)
 	while ($row = $stmt->fetch()) {
 		$CLASS_ID = $row['CLASS_ID'];
 		$CLASS_NAME = $row['CLASS_NAME'];
-		$cdm .= '<option value="' . $CLASS_ID . '"' . check_selected($CLASS_ID, $ITEM_VAL) . '>' . $CLASS_NAME . '</option>';
+		$cdm .= '<option value="' . (int) $CLASS_ID . '"' . check_selected($CLASS_ID, $ITEM_VAL) . '>' . htmlspecialchars((string) $CLASS_NAME, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</option>';
 	}
 	$cdm .= "</select>";
 
@@ -152,7 +151,7 @@ function list_roster($db, $class_id)
 	$stmt->execute();
 	if ($stmt->rowCount() > 0) {
 		$row = $stmt->fetch();
-		$class_list = $row['CLASS_NAME'];
+		$class_list = htmlspecialchars((string) $row['CLASS_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 	}
 	$class_list = "<b>" . $class_list . " Roster</b><br>";
 
@@ -168,8 +167,9 @@ function list_roster($db, $class_id)
 	$stmt->bindValue(':cid', $class_id, PDO::PARAM_INT);
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {
-		$check_link = '<input type="checkbox" name="' . $row['USER_CODE'] . '" value="' . $row['USER_CODE'] . '">';
-		$class_list .= "<tr><td align='center'>$check_link</td><td class='table_row'>" . $row['USER_LAST_NAME'] . ", " . $row['USER_FIRST_NAME'] . "</td><td class='table_row'>" . show_pupil_quizzes($db, $row['USER_CODE']) . "</td></tr>";
+		$safeUserCode = htmlspecialchars((string) $row['USER_CODE'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+		$check_link = '<input type="checkbox" name="' . $safeUserCode . '" value="' . $safeUserCode . '">';
+		$class_list .= "<tr><td align='center'>$check_link</td><td class='table_row'>" . htmlspecialchars((string) $row['USER_LAST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ", " . htmlspecialchars((string) $row['USER_FIRST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</td><td class='table_row'>" . show_pupil_quizzes($db, $row['USER_CODE']) . "</td></tr>";
 	}
 	$class_list .= "</table></form";
 	return $class_list;

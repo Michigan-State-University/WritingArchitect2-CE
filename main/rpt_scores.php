@@ -121,7 +121,7 @@ function write_report($db, $classid)
 	echo "<tr><td><b>Student</b></td><td align='right' width='30'><b>1</b></td><td align='right' width='30'><b>2</b></td><td align='right' width='30'><b>3</b></td><td align='right' width='30'><b>1</b></td><td align='right' width='30'><b>2</b></td><td align='right' width='30'><b>3</b></td><td align='right'><b>1</b></td><td align='right'><b>2</b></td><td align='right'><b>3</b></td><td align='right' width='30'><b>1</b></td><td align='right' width='30'><b>2</b></td><td align='right' width='30'><b>3</b></td><td align='right'><b>1</b></td><td align='right'><b>2</b></td><td align='right'><b>3</b></td><td align='right'><b>1</b></td><td align='right'><b>2</b></td><td align='right'><b>3</b></td><td align='right'><b>1</b></td><td align='right'><b>2</b></td><td align='right'><b>3</b></td><td align='right'><b>1</b></td><td align='right'><b>2</b></td><td align='right'><b>3</b></td></tr> 	";
 
 	foreach ($students as $x => $x_value) {
-		echo "<tr><td>" . $x_value . "</td>";
+		echo "<tr><td>" . account_html($x_value) . "</td>";
 		echo "<td align='right'>" . $test1[$x]['TIDE'] . "</td><td align='right'>" . $test2[$x]['TIDE'] . "</td><td align='right'>" . $test3[$x]['TIDE'] . "</td>";
 		echo "<td align='right'>" . $test1[$x]['PLANNING'] . "</td><td align='right'>" . $test2[$x]['PLANNING'] . "</td><td align='right'>" . $test3[$x]['PLANNING'] . "</td>";
 		echo "<td align='right'>" . $test1[$x]['TYPING'] . "</td><td align='right'>" . $test2[$x]['TYPING'] . "</td><td align='right'>" . $test3[$x]['TYPING'] . "</td>";

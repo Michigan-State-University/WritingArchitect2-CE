@@ -21,14 +21,15 @@ if ($stmt->rowCount() > 0) {
 	$row = $stmt->fetch();
 	$class_list = $row['CLASS_NAME'];
 }
-echo $class_list . " Roster<br>";
+echo htmlspecialchars((string) $class_list, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . " Roster<br>";
 
 $query = "SELECT USER_LAST_NAME, USER_FIRST_NAME from config_users WHERE USER_ID IN (select PUPIL_STUDENTID FROM config_pupils WHERE PUPIL_CLASSID=:classid) ORDER BY USER_LAST_NAME, USER_FIRST_NAME ";
 $stmt = $db->prepare($query);
 $stmt->bindValue('classid', $CLASSID, PDO::PARAM_INT);
 $stmt->execute();
 while ($row = $stmt->fetch()) {
-	echo $row['USER_LAST_NAME'] . ", " . $row['USER_FIRST_NAME'] . "<br>";
+	echo htmlspecialchars((string) $row['USER_LAST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ", " .
+		htmlspecialchars((string) $row['USER_FIRST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "<br>";
 }
 
 ?>

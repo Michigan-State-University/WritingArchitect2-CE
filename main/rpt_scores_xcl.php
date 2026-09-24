@@ -3,6 +3,7 @@
 include_once '../includes/Database.php';
 include_once '../includes/WA_Accounts.php';
 include_once '../includes/WA_Security.php';
+include_once '../includes/Spreadsheet.php';
 
 //get incoming values
 $database = new Database();
@@ -29,6 +30,7 @@ header("Content-Disposition: attachment; filename=$file");
 
 function filterData(&$str)
 {
+	$str = spreadsheet_safe_value($str);
 	$str = preg_replace("/\t/", "\\t", $str);
 	$str = preg_replace("/\r?\n/", "\\n", $str);
 	if (strstr($str, '"')) $str = '"' . str_replace('"', '""', $str) . '"';
