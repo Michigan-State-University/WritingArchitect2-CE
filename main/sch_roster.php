@@ -1,88 +1,54 @@
-<!DOCTYPE html>
 <?php
+ini_set('display_errors', '0');
+
 include_once '../includes/Database.php';
 include_once '../includes/WA_Accounts.php';
 include_once '../includes/WA_Security.php';
 include_once '../includes/WA_Classes.php';
 include_once '../includes/WA_Quiz.php';
-ini_set('display_errors', '1'); // DEVELOPMENT ONLY
+include_once '../includes/QuickWriteAssignment.php';
 
 //get incoming values
 $database = new Database();
 $db = $database->connect();
 
 $secure_access = check_security($db);
-$cid = isset($_REQUEST['cid']) ? $_REQUEST['cid'] : die();
-$QTS = isset($_REQUEST['QTS']) ? $_REQUEST['QTS'] : "";
-//$STUDENTIDS = isset($_REQUEST['STUDENTID']) ? $_REQUEST['STUDENTID'] : "";
-
 if ($GLOBALS['USER_LEVEL'] == "STUDENT") die("Access denied.");
 
-$studentids = var_export($_POST, true);
-$sids = "0";
-$studentids = str_replace(" ", "", $studentids);
-$a1 = explode(",", $studentids);
-
-foreach ($a1 as $x) {
-	if ($x[1] === "'") {
-		$sidarr = explode("=>", $x);
-		$sidplus = $sidarr[0];
-		$sidplus = str_replace("\n", "", $sidplus);
-		$sids .= "," . str_replace("'", "", $sidplus);
+$actor = [
+	'user_code' => $GLOBALS['USER_CODE'],
+	'user_level' => $GLOBALS['USER_LEVEL'],
+	'school_id' => $GLOBALS['USER_SCHOOL_SN'],
+];
+$assignment = new QuickWriteAssignment($db);
+try {
+	$cid = QuickWriteAssignment::parseClassId(isset($_GET['cid']) ? $_GET['cid'] : null);
+	$assignment->assertCanAccessClass($cid, $actor);
+	if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+		QuickWriteAssignment::assertCsrfToken(
+			isset($_POST['csrf_token']) ? $_POST['csrf_token'] : null,
+			(string) $GLOBALS['SESSION_ID'],
+			(string) $GLOBALS['USER_CODE']
+		);
+		$studentIds = QuickWriteAssignment::parseStudentIds($_POST);
+		$templateTitle = isset($_POST['QTS']) ? (string) $_POST['QTS'] : '';
+		$assignment->assign($cid, $studentIds, $templateTitle, $actor);
 	}
+} catch (QuickWriteAssignmentAuthorizationException $exception) {
+	http_response_code(403);
+	die('Access denied.');
+} catch (InvalidArgumentException $exception) {
+	http_response_code(400);
+	die(htmlspecialchars($exception->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+} catch (Throwable $exception) {
+	error_log('Quick-write assignment failed: ' . $exception->getMessage());
+	http_response_code(500);
+	die('Unable to process the quick-write assignment.');
 }
-if ($sids != "0") assign_quizzes_to_student($db, $sids, $QTS);
 
 $GLOBALS['page_title'] = "Class Roster";
-
-function assign_quizzes_to_student($db, $listofstudents, $qts)
-{
-	$std_arr = explode(",", $listofstudents);
-	$query = "SELECT QT_PROMPT_1, QT_PROMPT_2, QT_PROMPT_3 from quiz_template where QT_TITLE=:qts";
-	$stmt = $db->prepare($query);
-	$stmt->bindValue(':qts', $qts, PDO::PARAM_STR);
-	$stmt->execute();
-	if ($stmt->rowCount() > 0) {
-		$row = $stmt->fetch();
-		assign_prompt($db, $std_arr, $row['QT_PROMPT_1']);
-		assign_prompt($db, $std_arr, $row['QT_PROMPT_2']);
-		assign_prompt($db, $std_arr, $row['QT_PROMPT_3']);
-	}
-}
-
-function assign_prompt($db, $students_arr, $prompt_name)
-{
-	$query = "SELECT PROMPT_ID, PROMPT_TITLE from quiz_prompts where PROMPT_SHORT_TITLE=:prompt_name";
-	$stmt = $db->prepare($query);
-	$stmt->bindValue(':prompt_name', $prompt_name, PDO::PARAM_STR);
-	$stmt->execute();
-	if ($stmt->rowCount() > 0) {
-		$row = $stmt->fetch();
-		$promptid = $row['PROMPT_ID'];
-		// Old code, add backslahes before single quotes
-		// $prompttitle = addslashes($row['PROMPT_TITLE']);
-		$prompttitle = $row['PROMPT_TITLE'];
-		foreach ($students_arr as $s) {
-			if ($s != "0") {
-				$dataval = "Q_GRADING_STATUS='Pending',";
-				$dataval .= "Q_PROMPT_ID=:promptid,";
-				$dataval .= "Q_PROMPT_TITLE=:prompttitle,";
-				$dataval .= "Q_STUDENT_ID=:s,";
-
-				$createdtext = " Q_CREATED_BY=:guc, Q_CREATED_AT=UTC_TIMESTAMP()";
-				$query = "INSERT into quiz set " . $dataval . $createdtext;
-				$stmt = $db->prepare($query);
-				$stmt->bindValue(':promptid', $promptid, PDO::PARAM_INT);
-				$stmt->bindValue(':prompttitle', $prompttitle, PDO::PARAM_STR);
-				$stmt->bindValue(':s', $s, PDO::PARAM_STR);
-				$stmt->bindValue(':guc', $GLOBALS['USER_CODE'], PDO::PARAM_STR);
-				$stmt->execute();
-			}
-		}
-	}
-}
-
 ?>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>

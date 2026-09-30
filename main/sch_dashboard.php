@@ -18,18 +18,21 @@ function menu_of_classes($db, $ITEM_NAME)
 {
 	$cdm = '<select id="' . $ITEM_NAME . '" name="' . $ITEM_NAME . '" size="1">';
 
-	if (strpos($GLOBALS['USER_AUTHORITY'], 'TEACHER') == false) {
+	if ($GLOBALS['USER_LEVEL'] === 'TEACHER') {
+		$clauses = "CLASS_TEACHER_ID=:guc";
+	} elseif ($GLOBALS['USER_LEVEL'] === 'ADMIN' || $GLOBALS['USER_LEVEL'] === 'SCORER') {
 		$clauses = "CLASS_SCHOOL_ID=:guss";
 	} else {
-		$clauses = "CLASS_TEACHER_ID=:guc";
+		echo $cdm . '</select>';
+		return;
 	}
 
 	$query = "SELECT CLASS_ID, CLASS_NAME, USER_LAST_NAME, USER_FIRST_NAME from config_classes join config_users on CLASS_TEACHER_ID=USER_CODE WHERE " . $clauses . " order by CLASS_NAME";
 	$stmt = $db->prepare($query);
-	if (strpos($GLOBALS['USER_AUTHORITY'], 'TEACHER') == false) {
-		$stmt->bindValue(':guss', $GLOBALS['USER_SCHOOL_SN'], PDO::PARAM_STR);
-	} else {
+	if ($GLOBALS['USER_LEVEL'] === 'TEACHER') {
 		$stmt->bindValue(':guc', $GLOBALS['USER_CODE'], PDO::PARAM_STR);
+	} else {
+		$stmt->bindValue(':guss', $GLOBALS['USER_SCHOOL_SN'], PDO::PARAM_STR);
 	}
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {

@@ -45,6 +45,7 @@ jobs:
           php tests/student_batch_import_test.php
           php tests/account_identity_regression_test.php
           php tests/student_account_integration_test.php
+          php tests/quick_write_assignment_integration_test.php
           php tests/ciws_score_calculator_test.php
           php tests/ciws_score_submission_test.php
           php tests/ciws_scoring_markup_parser_test.php

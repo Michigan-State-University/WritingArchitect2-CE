@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/QuickWriteAssignment.php';
 class School_Class
 {
 	private $conn;
@@ -87,19 +88,22 @@ class School_Class
 // list classes
 function list_classes($db)
 {
-	if (strpos($GLOBALS['USER_AUTHORITY'], 'TEACHER') == false) {
+	$userLevel = isset($GLOBALS['USER_LEVEL']) ? $GLOBALS['USER_LEVEL'] : '';
+	$class_list = "<table><tr><td class='table_title'>Edit</td><td class='table_title'>Class Name</td><td class='table_title'>Grade</td><td class='table_title'>Teacher</td></tr>";
+	if ($userLevel === 'TEACHER') {
+		$clauses = "CLASS_TEACHER_ID=:guc";
+	} elseif ($userLevel === 'ADMIN' || $userLevel === 'SCORER') {
 		$clauses = "CLASS_SCHOOL_ID=:guss";
 	} else {
-		$clauses = "CLASS_TEACHER_ID=:guc";
+		return $class_list . "</table>";
 	}
 
-	$class_list = "<table><tr><td class='table_title'>Edit</td><td class='table_title'>Class Name</td><td class='table_title'>Grade</td><td class='table_title'>Teacher</td></tr>";
 	$query = "SELECT * from config_classes join config_users on CLASS_TEACHER_ID=USER_CODE WHERE " . $clauses . " order by CLASS_NAME";
 	$stmt = $db->prepare($query);
-	if (strpos($GLOBALS['USER_AUTHORITY'], 'TEACHER') == false) {
-		$stmt->bindValue(':guss', $GLOBALS['USER_SCHOOL_SN'], PDO::PARAM_STR);
-	} else {
+	if ($userLevel === 'TEACHER') {
 		$stmt->bindValue(':guc', $GLOBALS['USER_CODE'], PDO::PARAM_STR);
+	} else {
+		$stmt->bindValue(':guss', $GLOBALS['USER_SCHOOL_SN'], PDO::PARAM_STR);
 	}
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {
@@ -116,19 +120,22 @@ function list_classes($db)
 // list class menu
 function classes_menu($db, $ITEM_VAL)
 {
-	if (strpos($GLOBALS['USER_AUTHORITY'], 'TEACHER') == false) {
+	$userLevel = isset($GLOBALS['USER_LEVEL']) ? $GLOBALS['USER_LEVEL'] : '';
+	$cdm = '<select id="CLASSES" name="CLASSES" size="1" required class="form-control"><option value=""' . check_selected("", $ITEM_VAL) . '>Select</option>';
+	if ($userLevel === 'TEACHER') {
+		$clauses = "CLASS_TEACHER_ID=:guc";
+	} elseif ($userLevel === 'ADMIN' || $userLevel === 'SCORER') {
 		$clauses = "CLASS_SCHOOL_ID=:guss";
 	} else {
-		$clauses = "CLASS_TEACHER_ID=:guc";
+		return $cdm . '</select>';
 	}
 
-	$cdm = '<select id="CLASSES" name="CLASSES" size="1" required class="form-control"><option value=""' . check_selected("", $ITEM_VAL) . '>Select</option>';
 	$query = "SELECT * from config_classes join config_users on CLASS_TEACHER_ID=USER_CODE WHERE " . $clauses . " order by CLASS_NAME";
 	$stmt = $db->prepare($query);
-	if (strpos($GLOBALS['USER_AUTHORITY'], 'TEACHER') == false) {
-		$stmt->bindValue(':guss', $GLOBALS['USER_SCHOOL_SN'], PDO::PARAM_STR);
-	} else {
+	if ($userLevel === 'TEACHER') {
 		$stmt->bindValue(':guc', $GLOBALS['USER_CODE'], PDO::PARAM_STR);
+	} else {
+		$stmt->bindValue(':guss', $GLOBALS['USER_SCHOOL_SN'], PDO::PARAM_STR);
 	}
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {
@@ -156,22 +163,24 @@ function list_roster($db, $class_id)
 	$class_list = "<b>" . $class_list . " Roster</b><br>";
 
 	// show the prompt selection menu
-	$class_list .= '<form id="qtassign" action="sch_roster.php?id=' . $GLOBALS["SESSION_ID"] . '&cid=' . $class_id . '" method="post" name="qtassign"><table><td><td>Assign the form to selected students&nbsp;</td>';
+	$safeSessionId = htmlspecialchars((string) $GLOBALS["SESSION_ID"], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+	$csrfToken = QuickWriteAssignment::csrfToken((string) $GLOBALS["SESSION_ID"], (string) $GLOBALS['USER_CODE']);
+	$class_list .= '<form id="qtassign" action="sch_roster.php?id=' . $safeSessionId . '&cid=' . (int) $class_id . '" method="post" name="qtassign">';
+	$class_list .= '<input type="hidden" name="csrf_token" value="' . $csrfToken . '"><table><td><td>Assign the form to selected students&nbsp;</td>';
 	$class_list .= "<td>" . qt_menu($db, "", "QTS") . "</td>";
 	$class_list .= '<td><input type="submit"  class="waButtonSmall" value="Assign Form"></td></tr></table><br>';
 
 	$class_list .= "<table><tr><td class='table_title'>Add</td><td class='table_title'>Name</td><td class='table_title'>Quick-Write</td></tr>";
 
-	$query = "SELECT USER_CODE, USER_LAST_NAME, USER_FIRST_NAME from config_users WHERE USER_ID IN (select PUPIL_STUDENTID FROM config_pupils WHERE PUPIL_CLASSID=:cid) ORDER BY USER_LAST_NAME, USER_FIRST_NAME ";
+	$query = "SELECT USER_ID, USER_CODE, USER_LAST_NAME, USER_FIRST_NAME from config_users WHERE USER_STATUS='ACTIVE' AND USER_LEVEL='STUDENT' AND USER_ID IN (select PUPIL_STUDENTID FROM config_pupils WHERE PUPIL_CLASSID=:cid) ORDER BY USER_LAST_NAME, USER_FIRST_NAME ";
 	$stmt = $db->prepare($query);
 	$stmt->bindValue(':cid', $class_id, PDO::PARAM_INT);
 	$stmt->execute();
 	while ($row = $stmt->fetch()) {
-		$safeUserCode = htmlspecialchars((string) $row['USER_CODE'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-		$check_link = '<input type="checkbox" name="' . $safeUserCode . '" value="' . $safeUserCode . '">';
+		$check_link = '<input type="checkbox" name="student_ids[]" value="' . (int) $row['USER_ID'] . '">';
 		$class_list .= "<tr><td align='center'>$check_link</td><td class='table_row'>" . htmlspecialchars((string) $row['USER_LAST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ", " . htmlspecialchars((string) $row['USER_FIRST_NAME'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</td><td class='table_row'>" . show_pupil_quizzes($db, $row['USER_CODE']) . "</td></tr>";
 	}
-	$class_list .= "</table></form";
+	$class_list .= "</table></form>";
 	return $class_list;
 }
 
