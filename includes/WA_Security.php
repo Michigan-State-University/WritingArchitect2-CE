@@ -33,8 +33,11 @@ function check_security($db)
 			//echo $GLOBAL["SESSION_ID"];
 
 			return true;
-		} else header("Location: logout.php?id=$sess_id2");
+		}
 	}
+
+	header('Location: /main/logout.php?id=' . rawurlencode($sess_id2));
+	exit;
 }
 
 function update_session_id($db, $sess_id)

@@ -41,6 +41,7 @@ jobs:
           WA_TEST_DB_USERNAME: waAdmin1
           WA_TEST_DB_PASSWORD: changeme
         run: |
+          php tests/security_redirect_regression_test.php
           php tests/student_batch_import_test.php
           php tests/account_identity_regression_test.php
           php tests/student_account_integration_test.php

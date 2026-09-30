@@ -1,10 +1,10 @@
-<!DOCTYPE html>
 <?php
+ini_set('display_errors', '0');
+
 include_once '../includes/Database.php';
 include_once '../includes/WA_Accounts.php';
 include_once '../includes/WA_Security.php';
 include_once '../includes/WA_Quiz.php';
-ini_set('display_errors', '1'); // DEVELOPMENT ONLY
 
 //get incoming values
 $database = new Database();
@@ -17,6 +17,7 @@ $quiz = new QUIZ($db);
 if ($GLOBALS['USER_LEVEL'] == "STUDENT") die("Access Denied");
 
 ?>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
